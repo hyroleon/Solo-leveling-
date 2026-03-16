@@ -1,346 +1,275 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHADOW SYSTEM | Core v23.1</title>
-    <style>
-        :root { --bg: #050505; --p: #0d0d0d; --a: #00f2ff; --t: #e0e0e0; --b: #1a1a1a; --error: #ff3e3e; }
-        * { box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--t); margin: 0; padding: 10px; }
-        
-        .panel { background: var(--p); border: 1px solid var(--b); padding: 15px; margin-bottom: 10px; position: relative; }
-        .day-counter { position: absolute; top: 10px; right: 10px; font-size: 10px; color: var(--a); border: 1px solid var(--a); padding: 2px 6px; }
-        
-        .av-box { width: 120px; height: 120px; margin: 0 auto 10px; border: 1px solid var(--a); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
-        .av-img { width: 100%; height: 100%; object-fit: cover; }
+<!DOCTYPE html>        
+<html lang="pt-br">        
+<head>        
+    <meta charset="UTF-8">        
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">        
+    <title>SHADOW SYSTEM | Core v34.0 Audio Update</title>        
+    <style>        
+        :root { --bg: #050505; --p: #0d0d0d; --a: #00f2ff; --t: #e0e0e0; --b: #1a1a1a; --shadow: #6a00ff; --danger: #ff4444; }        
+        * { box-sizing: border-box; font-family: 'Courier New', monospace; }        
+        body { background: var(--bg); color: var(--t); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }        
+        .container { width: 100%; max-width: 500px; }        
+                
+        .panel { background: var(--p); border: 1px solid var(--b); padding: 15px; margin-bottom: 10px; position: relative; }        
+        .day-counter { position: absolute; top: 10px; right: 10px; font-size: 10px; color: var(--a); border: 1px solid var(--a); padding: 2px 6px; }        
+                
+        .header-status { text-align: center; padding-top: 20px; }
+        .avatar-container { width: 90px; height: 90px; margin: 0 auto 10px; border: 2px solid var(--a); border-radius: 50%; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #000; box-shadow: 0 0 15px rgba(0,242,255,0.2); }
+        .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
+        #file-input { display: none; }
 
-        .lvl { font-size: 80px; font-weight: bold; color: var(--a); text-align: center; margin: 10px 0; line-height: 1; }
-        .xp-w { width: 100%; height: 4px; background: #111; margin: 10px 0; }
-        .xp-f { height: 100%; background: var(--a); width: 0%; transition: 0.5s; }
-
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .node { border: 1px solid var(--b); padding: 10px 2px; font-size: 9px; text-align: center; cursor: pointer; color: #444; text-transform: uppercase; min-height: 35px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .unlocked { background: var(--a) !important; color: #000 !important; font-weight: bold; }
-        .ready { border-color: var(--a); color: var(--a); }
-
-        .attr-row { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #111; }
-        .attr-v { color: var(--a); font-weight: bold; background: transparent; border: none; text-align: right; width: 50px; font-size: 14px; outline: none; }
-
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .card { background: #080808; border: 1px solid var(--a); padding: 25px; width: 100%; max-width: 400px; box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
+        .lvl { font-size: 80px; font-weight: bold; color: var(--a); margin: 5px 0; line-height: 1; text-shadow: 0 0 10px rgba(0,242,255,0.3); }        
+        .rank-ui { font-size: 11px; color: var(--a); font-weight: bold; letter-spacing: 2px; }        
+        .xp-w { width: 100%; height: 6px; background: #111; margin: 15px 0; border-radius: 3px; overflow: hidden; }        
+        .xp-f { height: 100%; background: var(--a); width: 0%; transition: 0.6s ease-out; }        
         
-        .opt { border: 1px solid var(--b); padding: 12px; margin-bottom: 8px; cursor: pointer; text-align: center; transition: 0.2s; }
-        .opt.sel { border-color: var(--a); background: rgba(0,242,255,0.15); color: var(--a); }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }        
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }        
+                
+        .attr-card { background: #000; border: 1px solid #1a1a1a; padding: 10px; display: flex; justify-content: space-between; align-items: center; }        
+        .attr-v { color: var(--a); font-weight: bold; background: transparent; border: none; text-align: right; width: 45px; font-size: 14px; outline: none; }        
         
-        .chip-at { border: 1px solid #222; padding: 8px 2px; font-size: 9px; text-align: center; cursor: pointer; }
-        .chip-at.sel { border-color: var(--a); color: var(--a); background: rgba(0,242,255,0.05); }
+        .mission-item { background: #000; border: 1px solid #222; padding: 12px; margin-bottom: 10px; border-left: 3px solid var(--a); }        
+        .m-done { border-color: var(--shadow); opacity: 0.3; filter: grayscale(1); pointer-events: none; }        
+        .m-title { font-size: 9px; color: var(--a); font-weight: bold; display: block; margin-bottom: 4px; text-transform: uppercase; }        
+        .m-desc { font-size: 12px; line-height: 1.3; display: block; margin-bottom: 10px; }        
+        
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }        
+        .card { background: #080808; border: 1px solid var(--a); padding: 25px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; }        
+                
+        button { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--a); color: var(--a); cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 11px; transition: 0.2s; outline: none; }        
+        button:active { background: var(--a); color: #000; }        
+        .setup-btn { margin-top: 10px; border: 1px solid #333; color: #888; }
+        .setup-btn.active { border-color: var(--a); color: var(--a); }
+        .penalty-msg { color: var(--danger); font-size: 10px; margin-top: 5px; text-align: center; font-weight: bold; min-height: 12px;}
 
-        button { width: 100%; padding: 14px; background: transparent; border: 1px solid var(--a); color: var(--a); cursor: pointer; font-family: inherit; font-weight: bold; margin: 5px 0; text-transform: uppercase; letter-spacing: 1px; }
-        button:hover { background: var(--a); color: #000; }
-        
         .hidden { display: none !important; }
-        .mission-tag { font-size: 10px; background: var(--a); color: #000; padding: 2px 8px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
+        input[type="text"] { width:100%; padding:12px; background:#000; color:#fff; border:1px solid #222; margin-bottom:10px; }
+    </style>        
+</head>        
+<body>        
         
-        .penalty-msg { color: var(--error); font-size: 11px; text-align: center; margin-bottom: 15px; font-weight: bold; animation: blink 1s infinite; border: 1px solid var(--error); padding: 5px; }
-        @keyframes blink { 50% { opacity: 0.3; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-</head>
-<body>
-
-<div id="setup-box" class="overlay hidden">
-    <div class="card" id="setup-content"></div>
-</div>
-
-<div id="pop" class="overlay hidden" onclick="this.classList.add('hidden')">
-    <div class="card" onclick="event.stopPropagation()">
-        <h3 id="pop-t" style="color: var(--a); margin:0; font-size: 18px; text-transform: uppercase;"></h3>
-        <p id="pop-d" style="font-size: 14px; margin: 20px 0; line-height: 1.4; color: #bbb;"></p>
-        <div id="pop-btn"></div>
-        <button onclick="document.getElementById('pop').classList.add('hidden')" style="border:none; font-size:11px; margin-top:15px; color: #555;">[ CANCELAR ]</button>
+<div id="setup-box" class="overlay hidden"><div class="card" id="setup-content"></div></div>        
+<div id="skill-selector" class="overlay hidden"><div class="card" id="options-container"></div></div>        
+        
+<div class="container">        
+    <div class="panel">        
+        <div class="day-counter" id="day-ui">DAY 01</div>        
+        <div class="header-status">        
+            <div class="avatar-container" onclick="document.getElementById('file-input').click()">
+                <div id="av-view" style="color:#555; font-size:24px;">+</div>
+                <input type="file" id="file-input" accept="image/*" onchange="Sys.handleImg(event)">
+            </div>
+            <div id="n-ui" style="letter-spacing:4px; font-weight:bold; font-size: 18px;">---</div>        
+            <div id="c-ui" style="color: var(--a); font-size: 9px; margin-top: 4px; letter-spacing: 2px;">---</div>        
+            <div class="lvl" id="l-ui">01</div>        
+            <div id="rank-label" class="rank-ui">RANK: E</div>        
+        </div>        
+        <div class="xp-w"><div id="x-ui" class="xp-f"></div></div>        
+        <div class="grid-2">
+            <button onclick="Sys.modXP(-1)">-1 XP</button>
+            <button onclick="Sys.modXP(1)">+1 XP</button>
+        </div>
+        <div id="penalty-log" class="penalty-msg"></div>
+    </div>        
+        
+    <div class="panel">        
+        <div style="font-size:10px; color:var(--a); margin-bottom:12px; font-weight: bold;">ACTIVE MISSIONS</div>        
+        <div id="m-ui"></div>        
+    </div>        
+        
+    <div class="panel">        
+        <div style="font-size:9px; text-align:center; color:#555; margin-bottom:10px;">DNA CORE</div>        
+        <div id="a-ui" class="grid-2"></div>        
+    </div>        
+        
+    <div class="panel">        
+        <div style="font-size:9px; text-align:center; color:#555; margin-bottom:10px;">SKILLS ACQUIRED</div>        
+        <div class="grid-3" id="s-ui"></div>        
+        <button onclick="Sys.reset()" style="border:none; color:#1a1a1a; font-size:9px; margin-top:20px; background:none; width:100%;">[ FORMAT SYSTEM ]</button>
     </div>
-</div>
-
-<div class="panel">
-    <div class="day-counter" id="day-ui">DIA 01</div>
-    <div id="penalty-ui" class="penalty-msg hidden">ALERTA: PENALIDADE POR INATIVIDADE (-5 XP)</div>
-    <div class="av-box" onclick="document.getElementById('f').click()">
-        <img id="img" class="av-img hidden">
-        <span id="txt-av">UPLOAD_DNA</span>
-    </div>
-    <input type="file" id="f" hidden accept="image/*" onchange="Sys.up(this)">
-    
-    <div id="n-ui" style="text-align:center; letter-spacing:4px; font-weight:bold; font-size: 18px; margin-top:10px;">---</div>
-    <div id="c-ui" style="text-align:center; color: var(--a); font-size: 11px; margin-bottom: 10px;">---</div>
-    
-    <div class="lvl" id="l-ui">01</div>
-    <div class="xp-w"><div id="x-ui" class="xp-f"></div></div>
-    <button onclick="Sys.addXP(1)">GRIND MANUAL +1% XP</button>
-</div>
-
-<div class="panel">
-    <button onclick="Sys.genMission()">BUSCAR MISSÃO DE TREINO</button>
-    <div id="m-ui"></div>
-</div>
-
-<div class="panel">
-    <div style="font-size:10px; text-align:center; color:#555; margin-bottom:12px; letter-spacing: 2px;">SKILL TREE (PASSIVAS)</div>
-    <div class="grid-3" id="s-ui"></div>
-</div>
-
-<div class="panel">
-    <div style="font-size:10px; text-align:center; color:#555; margin-bottom:12px; letter-spacing: 2px;">STATUS DO NÚCLEO</div>
-    <div id="a-ui"></div>
-    <button onclick="Sys.reset()" style="border:none; color:#444; font-size:10px; margin-top:20px;">[ FORMATAR SISTEMA ]</button>
-</div>
-
-<script>
-    // --- BANCO DE DADOS DE MISSÕES EXPANDIDO ---
-    const MISSION_POOL = {
-        FOR: ["15 Flexões explosivas", "30s de Agachamento na parede", "10 Burpees", "Levantar peso por 5 min", "Prancha abdominal 45s"],
-        VIT: ["Beber 500ml de água gelada", "Comer 1 fruta", "Banho gelado (reset)", "10 min de sol", "Preparar refeição saudável"],
-        AGI: ["1 min de polichinelos", "Alongamento completo 3 min", "Correr no lugar 2 min", "Limpar ambiente de trabalho", "Subir escadas 3x"],
-        INT: ["Ler 5 páginas de um livro", "Estudar 15 min sem interrupções", "Aprender 3 palavras em outro idioma", "Resolver 1 desafio lógico", "Codar/Escrever por 10 min"],
-        CAR: ["Puxar assunto com alguém", "Elogiar sinceramente um colega", "Postar insight profissional", "Treinar oratória no espelho", "Networking: Enviar 1 mensagem"],
-        SAB: ["Meditar 5 minutos", "Escrever 3 gratidões do dia", "Ouvir 15 min de Podcast educativo", "Refletir sobre um erro recente", "Organizar metas da semana"],
-        CON: ["Organizar a lista de tarefas", "Deletar 20 e-mails inúteis", "Limpar a área de trabalho (PC)", "Revisar gastos do dia", "Planejar o dia de amanhã"],
-        def: ["Foco Total: 20 min sem celular", "Organizar a mesa de trabalho", "Beber água e respirar fundo 10x"]
+</div>        
+        
+<script>        
+    const QUESTS = { 
+        FOR:["Flexões", "Carga Máxima"], VIT:["Banho Gelo", "4L Água"], INT:["Sudoku", "Code"], 
+        AGI:["Corda", "Reflexo"], CAR:["Estranho", "Oratória"], SAB:["Meditar", "Gratidão"], 
+        TEN:["Deep Work", "Banho Frio"], 
+        ADAP:["Mudar Rota Trabalho", "Nova Técnica Escovar", "Aprender Nova Palavra", "Nova Receita"], 
+        RES:["Jejum", "Sem Açúcar"], COR:["Medo", "Decisão"], INF:["Arquivos", "Atalho"], 
+        MANA:["Nap", "No Screen"], VEL:["Sprint", "Digitar"], DEF:["Postura", "Esquiva"], 
+        PRE:["Espelho", "Postura"], HON:["Promessa", "Erro"], SOR:["Sorteio", "Risco"], 
+        EMO:["Gatilho", "Perdão"], ART:["Desenho", "Poema"], ALQ:["Receita", "Workspace"], 
+        SOM:["Body Lang", "Voz"], ALMA:["Crença", "Caridade"], MAL:["Adverso", "Frio"], 
+        RIT:["Ritmo", "Horário"], OSS:["Impacto", "Cálcio"], ARC:["História", "Museu"], 
+        NAT:["Sol", "Planta"], PER:["Detalhe", "Cheiro"], FUR:["Explosão", "Saco"], CON:["Foco", "Puzzle"] 
     };
 
-    const SKILLS_DATA = [
-        { n: "Resiliência", d: "Capacidade de manter o foco após falhas." },
-        { n: "Foco Absoluto", d: "Aumenta produtividade em tarefas únicas." },
-        { n: "Mão do Rei", d: "Melhora a capacidade de liderar e delegar." },
-        { n: "Visão Analítica", d: "Facilidade em identificar padrões e erros." },
-        { n: "Comunicação", d: "Expressão clara e persuasiva." },
-        { n: "I. Emocional", d: "Controle sobre reações impulsivas." },
-        { n: "Disciplina", d: "Execução de rotinas sem motivação externa." },
-        { n: "Negociação", d: "Capacidade de fechar acordos vantajosos." },
-        { n: "Leitura Veloz", d: "Absorção rápida de novos conhecimentos." },
-        { n: "Networking", d: "Facilidade em criar conexões úteis." },
-        { n: "P. Crítico", d: "Análise profunda antes de tomar decisões." },
-        { n: "Gestão Mana", d: "Evita o esgotamento mental (Burnout)." },
-        { n: "Otimização", d: "Fazer mais em menos tempo." },
-        { n: "Auto-didata", d: "Aprender habilidades sozinho." },
-        { n: "Empatia", d: "Entender intenções de terceiros." },
-        { n: "Resolução", d: "Neutralizar conflitos rapidamente." },
-        { n: "Adaptável", d: "Manter a calma em mudanças bruscas." },
-        { n: "Presença", d: "Domínio de palco e fala pública." },
-        { n: "Estratégia", d: "Planejamento de longo prazo." },
-        { n: "Paciência", d: "Aguardar o tempo certo do 'drop'." },
-        { n: "Criatividade", d: "Gerar soluções fora da caixa." },
-        { n: "Mente Limpa", d: "Meditação e clareza de pensamento." },
-        { n: "Vigor Físico", d: "Resistência a longas horas de trabalho." },
-        { n: "Finanças", d: "Gestão e multiplicação de recursos." },
-        { n: "Curiosidade", d: "Busca constante por novidades." },
-        { n: "Humildade", d: "Reconhecer que sempre há o que aprender." },
-        { n: "Liderança", d: "Inspirar ação em outras pessoas." },
-        { n: "Poliglota", d: "Facilidade com novas linguagens." },
-        { n: "Escrita", d: "Poder de convencimento via texto." },
-        { n: "Ética", d: "Manter princípios sob pressão." },
-        { n: "Automação", d: "Criar sistemas que trabalham sozinhos." },
-        { n: "Intuição", d: "Confiança no subconsciente treinado." },
-        { n: "Flexibilidade", d: "Alternar entre tarefas diferentes." },
-        { n: "Síntese", d: "Resumir problemas complexos." },
-        { n: "Persistência", d: "Não parar até concluir o objetivo." },
-        { n: "Organização", d: "Manter ambiente e mente limpos." },
-        { n: "Decisividade", d: "Tomar decisões rápidas e seguras." },
-        { n: "Foco no Agora", d: "Estar 100% presente no momento." },
-        { n: "Domínio", d: "Velocidade superior com ferramentas." },
-        { n: "Alinhamento", d: "Sincronia entre planos e execução." },
-        { n: "Sorte", d: "Estar preparado quando a chance surge." },
-        { n: "Storytelling", d: "Tornar fatos em histórias magnéticas." },
-        { n: "Longo Prazo", d: "Sacrifício imediato pelo futuro." },
-        { n: "Antifrágil", d: "Ficar mais forte com o caos." },
-        { n: "Ceticismo", d: "Não acreditar em caminhos fáceis." }
+    const SKILL_DB = [
+        {n:"Resilience", d:"Bounce back from any failure."},
+        {n:"Deep Focus", d:"Absolute productivity for 90min."},
+        {n:"Communication", d:"Superior influence in speech."},
+        {n:"Discipline", d:"Execute tasks without motivation."},
+        {n:"E. Intelligence", d:"Control of all emotional impulses."},
+        {n:"Networking", d:"Access to high-level contacts."},
+        {n:"Sovereignty", d:"Alpha presence in any room."},
+        {n:"Stoicism", d:"Unalterable calm under pressure."}
     ];
 
-    const CLASSES = {
-        assassino: { n: "Assassino", b: {AGI:5, PRE:3} },
-        mago: { n: "Mago", b: {INT:5, SAB:3} },
-        guerreiro: { n: "Guerreiro", b: {FOR:5, VIT:3} },
-        bardo: { n: "Bardo", b: {CAR:5, INF:3} },
-        necromante: { n: "Necromante", b: {ALMA:5, RES:3} }
-    };
+    const Sys = {        
+        db: { name: "", class: "", lvl: 1, xp: 0, attrs: [], skills: [], dayCount: 1, avatar: null, lastDate: null, dailyMissions: [], unlockedTiers: [] },        
+        
+        start() {        
+            const s = localStorage.getItem('shadow_v34');        
+            if(s) { this.db = JSON.parse(s); this.processPenalty(); this.upd(); } else { this.step(1); }        
+            this.initAudio();
+        },        
+        
+        save() { localStorage.setItem('shadow_v34', JSON.stringify(this.db)); },
 
-    const ALL_ATTRS = ["FOR", "VIT", "DEF", "RES", "TEN", "AGI", "COR", "PRE", "HON", "VEL", "CAR", "SOR", "EMO", "ART", "INF", "INT", "MANA", "CON", "SAB", "ALQ", "SOM", "ALMA", "MAL", "RIT", "OSS", "ARC", "NAT", "PER", "FUR", "OURO"];
-
-    const Sys = {
-        db: { name: "", class: "", lvl: 1, xp: 0, attrs: [], skills: [], img: null, startDate: null, lastAccess: null, missionDoneToday: false },
-
-        start() {
-            const s = localStorage.getItem('shadow_v23');
-            if(s) { 
-                this.db = JSON.parse(s); 
-                this.checkPenalty();
-                this.upd(); 
-            } else { 
-                this.step(1); 
-            }
-        },
-
-        save() { localStorage.setItem('shadow_v23', JSON.stringify(this.db)); },
-
-        checkPenalty() {
-            if(!this.db.lastAccess) return;
-            const last = new Date(this.db.lastAccess);
-            const now = new Date();
-            const lastDay = new Date(last.getFullYear(), last.getMonth(), last.getDate());
-            const currentDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const diffDays = Math.floor((currentDay - lastDay) / (1000 * 60 * 60 * 24));
-
-            if(diffDays >= 1) {
-                this.db.xp -= 5;
-                if(this.db.xp < 0) {
-                    if(this.db.lvl > 1) { this.db.lvl--; this.db.xp = 95; }
-                    else { this.db.xp = 0; }
-                }
-                document.getElementById('penalty-ui').classList.remove('hidden');
-                this.db.missionDoneToday = false; 
-                this.db.lastAccess = now.toISOString();
-                this.save();
-            }
-        },
-
-        up(input) {
-            const fr = new FileReader();
-            fr.onload = (e) => {
-                const i = new Image();
-                i.onload = () => {
-                    const cv = document.createElement('canvas');
-                    cv.width = 200; cv.height = 200;
-                    cv.getContext('2d').drawImage(i, 0, 0, 200, 200);
-                    this.db.img = cv.toDataURL('image/jpeg', 0.6);
-                    this.save(); this.upd();
+        handleImg(e){
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev)=>{
+                const img = new Image();
+                img.onload = ()=>{
+                    let size = 100;
+                    let quality = 0.9;
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    const compress = () => {
+                        canvas.width = size;
+                        canvas.height = size;
+                        ctx.clearRect(0,0,size,size);
+                        ctx.drawImage(img,0,0,size,size);
+                        let data = canvas.toDataURL("image/jpeg",quality);
+                        if(data.length > 10000){
+                            if(quality > 0.2){ quality -= 0.05; }
+                            else if(size > 40){ size -= 5; quality = 0.9; }
+                            else{ 
+                                this.db.avatar = data; 
+                                this.save(); this.upd(); 
+                                return; 
+                            }
+                            compress();
+                        } else {
+                            this.db.avatar = data;
+                            this.save(); this.upd();
+                        }
+                    };
+                    compress();
                 };
-                i.src = e.target.result;
+                img.src = ev.target.result;
             };
-            fr.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
         },
 
-        addXP(v) {
-            this.db.xp += v;
-            while(this.db.xp >= 100) { 
-                this.db.lvl++; 
-                this.db.xp -= 100; 
-                alert("SISTEMA: NÍVEL ELEVADO!"); 
+        initAudio() {
+            // Criando áudio via link externo de trilha estilo épico/dark
+            const audio = new Audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3");
+            audio.loop = true;
+            audio.volume = 0.2;
+            // Tocar no primeiro clique na página
+            document.addEventListener('click', () => { audio.play(); }, { once: true });
+        },
+
+        processPenalty() {
+            const now = new Date();
+            const todayStr = now.toDateString();
+            if (this.db.lastDate && this.db.lastDate !== todayStr) {
+                const failed = this.db.dailyMissions.filter(m => !m.done).length;
+                let penaltyXP = (failed * 5);
+                const lastDateObj = new Date(this.db.lastDate);
+                const diffDays = Math.floor(Math.abs(now - lastDateObj) / (1000 * 60 * 60 * 24));
+                if (diffDays > 1) penaltyXP += (diffDays - 1) * 5;
+                if (penaltyXP > 0) {
+                    this.db.xp -= penaltyXP;
+                    if (this.db.xp < 0) this.db.xp = 0;
+                    document.getElementById('penalty-log').innerText = `PENALTY: -${penaltyXP} XP`;
+                }
+                this.db.dayCount += diffDays || 1;
+                this.generateMissions();
             }
-            this.db.lastAccess = new Date().toISOString();
+            this.db.lastDate = todayStr;
+            this.save();
+        },
+
+        generateMissions() {
+            this.db.dailyMissions = this.db.attrs.map(a => ({
+                attr: a[0], task: (QUESTS[a[0]]||["Core Task"])[Math.floor(Math.random()*(QUESTS[a[0]]||[]).length)], done: false
+            }));
+            this.save();
+        },
+
+        modXP(v) {        
+            this.db.xp += v;        
+            while(this.db.xp >= 100) { this.db.lvl++; this.db.xp -= 100; this.checkSkillUnlock(); }
+            if(this.db.xp < 0) this.db.xp = 0;
+            this.save(); this.upd();        
+        },        
+        
+        completeQuest(i) {
+            if(this.db.dailyMissions[i].done) return;
+            const aIdx = this.db.attrs.findIndex(a => a[0] === this.db.dailyMissions[i].attr);
+            if(aIdx!==-1) this.db.attrs[aIdx][1]++;
+            this.db.dailyMissions[i].done = true;
+            this.modXP(10);
+        },
+
+        checkSkillUnlock() {
+            const tier = Math.floor(this.db.lvl / 5) * 5;
+            if(tier > 0 && !this.db.unlockedTiers.includes(tier)) {
+                const selection = SKILL_DB.sort(() => 0.5 - Math.random()).slice(0, 3);
+                const cont = document.getElementById('options-container');
+                cont.innerHTML = `<h3>SKILL SELECTION</h3>` + selection.map(s => `<div class="setup-btn active" style="padding:15px; text-align:left;" onclick="Sys.pickSkill('${s.n}', ${tier})"><strong>${s.n}</strong><br><small>${s.d}</small></div>`).join('');
+                document.getElementById('skill-selector').classList.remove('hidden');
+            }
+        },
+
+        pickSkill(name, tier) {
+            this.db.skills.push({ n: name });
+            this.db.unlockedTiers.push(tier);
+            document.getElementById('skill-selector').classList.add('hidden');
             this.save(); this.upd();
         },
 
-        completeMission(attrName) {
-            const attrIndex = this.db.attrs.findIndex(a => a[0] === attrName);
-            if(attrIndex !== -1) { this.db.attrs[attrIndex][1] += 1; }
-            this.db.missionDoneToday = true;
-            this.addXP(5);
-            document.getElementById('m-ui').innerHTML = '';
-        },
-
-        genMission() {
-            // Busca o atributo com menor valor para sugerir treino
-            let weakest = this.db.attrs.reduce((p, c) => c[1] < p[1] ? c : p);
-            let attrName = weakest[0];
+        upd() {        
+            document.getElementById('n-ui').innerText = this.db.name || "PLAYER";        
+            document.getElementById('c-ui').innerText = (this.db.class || "SOLO").toUpperCase();        
+            document.getElementById('l-ui').innerText = String(this.db.lvl).padStart(2, '0');        
+            document.getElementById('x-ui').style.width = this.db.xp + '%';        
+            document.getElementById('day-ui').innerText = `DAY ${String(this.db.dayCount).padStart(2, '0')}`;
+            if(this.db.avatar) document.getElementById('av-view').innerHTML = `<img src="${this.db.avatar}">`;
             
-            // Seleciona missão aleatória da categoria ou fallback
-            const pool = MISSION_POOL[attrName] || MISSION_POOL.def;
-            const task = pool[Math.floor(Math.random() * pool.length)];
+            const avgAttr = this.db.attrs.reduce((p, c) => p + c[1], 0) / 10;
+            const rankScore = (this.db.lvl * 2) + avgAttr;
+            let rank = "E";
+            if(rankScore > 180) rank = "S";
+            else if(rankScore > 140) rank = "A";
+            else if(rankScore > 100) rank = "B";
+            else if(rankScore > 70) rank = "C";
+            else if(rankScore > 40) rank = "D";
+            document.getElementById('rank-label').innerText = `RANK: ${rank}`;
             
-            document.getElementById('m-ui').innerHTML = `
-                <div style="border:1px dashed var(--a); padding:15px; margin-top:15px; font-size:13px; background: rgba(0,242,255,0.03); animation: fadeIn 0.4s;">
-                    <span class="mission-tag">DATA_TARGET: ${attrName}</span>
-                    <p style="color:#fff; margin:10px 0; line-height:1.4;">> ${task}</p>
-                    <button onclick="Sys.completeMission('${attrName}')" style="padding:8px; font-size:11px; margin-top:5px; border-style:double;">CONCLUIR (+1 ${attrName} / +5% XP)</button>
-                </div>`;
-        },
-
-        upd() {
-            document.getElementById('n-ui').innerText = this.db.name;
-            document.getElementById('c-ui').innerText = this.db.class.toUpperCase();
-            document.getElementById('l-ui').innerText = String(this.db.lvl).padStart(2, '0');
-            document.getElementById('x-ui').style.width = this.db.xp + '%';
-            
-            if(this.db.startDate) {
-                const start = new Date(this.db.startDate);
-                const diff = Math.floor((new Date() - start) / (1000 * 60 * 60 * 24)) + 1;
-                document.getElementById('day-ui').innerText = `DIA ${String(diff).padStart(2, '0')}`;
-            }
-
-            if(this.db.img) { 
-                document.getElementById('img').src = this.db.img; 
-                document.getElementById('img').classList.remove('hidden'); 
-                document.getElementById('txt-av').classList.add('hidden'); 
-            }
-            
-            document.getElementById('a-ui').innerHTML = this.db.attrs.map((a, i) => `
-                <div class="attr-row"><span>${a[0]}</span><input type="number" class="attr-v" value="${a[1]}" onchange="Sys.db.attrs[${i}][1]=parseInt(this.value);Sys.save()"></div>
-            `).join('');
-
-            let sH = '';
-            for(let i=0; i<15; i++){
-                const req = (i+1)*5;
-                [i*3, i*3+1, i*3+2].forEach(id => {
-                    const has = this.db.skills.includes(id);
-                    const can = this.db.lvl >= req;
-                    const cls = has ? 'unlocked' : (can ? 'ready' : '');
-                    sH += `<div class="node ${cls}" onclick="Sys.openS(${id},${req},${has},${can})">${SKILLS_DATA[id].n.substring(0,6)}.</div>`;
-                });
-            }
-            document.getElementById('s-ui').innerHTML = sH;
-        },
-
-        openS(id, req, has, can) {
-            document.getElementById('pop-t').innerText = SKILLS_DATA[id].n;
-            document.getElementById('pop-d').innerText = SKILLS_DATA[id].d + " [REQ: LVL "+req+"]";
-            document.getElementById('pop-btn').innerHTML = has ? '<div style="color:var(--a); text-align:center; font-weight:bold;">HABILIDADE ATIVA</div>' : (can ? `<button onclick="Sys.db.skills.push(${id});Sys.save();Sys.upd();document.getElementById('pop').classList.add('hidden')">ADQUIRIR HABILIDADE</button>` : '<div style="color:#444; text-align:center;">NÍVEL INSUFICIENTE</div>');
-            document.getElementById('pop').classList.remove('hidden');
-        },
-
-        temp: { n:'', c:'', a:[] },
-        step(s) {
-            const area = document.getElementById('setup-content');
-            document.getElementById('setup-box').classList.remove('hidden');
-            
-            if(s===1) {
-                area.innerHTML = `
-                <h3 style="color:var(--a); margin-top:0;">IDENTIFICAÇÃO</h3>
-                <input type="text" id="in-n" placeholder="Digite seu nome"
-                style="width:100%; height:45px; padding:12px; font-size:16px; background:#000; color:#fff; border:1px solid #222; outline:none; margin:10px 0 15px 0;">
-                <button onclick="Sys.temp.n=document.getElementById('in-n').value;Sys.step(2)">PRÓXIMO</button>`;
-            }
-            else if(s===2) {
-                area.innerHTML = `<h3 style="color:var(--a); margin-top:0;">ESCOLHA SUA CLASSE</h3>` + 
-                Object.entries(CLASSES).map(([k,v])=>`<div class="opt ${this.temp.c===k?'sel':''}" onclick="Sys.temp.c='${k}';Sys.step(2)">${v.n}</div>`).join('') + 
-                `<button onclick="if(Sys.temp.c) Sys.step(3); else alert('Selecione uma classe')">PRÓXIMO</button>`;
-            }
-            else if(s===3) {
-                area.innerHTML = `<h3 style="color:var(--a); margin-top:0;">DNA (SELECIONE 6)</h3><div style="display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin-bottom:15px;">` + 
-                ALL_ATTRS.map(at => `<div class="chip-at ${this.temp.a.includes(at)?'sel':''}" onclick="Sys.tglA('${at}')">${at}</div>`).join('') + 
-                `</div><button onclick="if(Sys.temp.a.length===6) Sys.fin(); else alert('Selecione exatamente 6 atributos')">INICIALIZAR NÚCLEO</button>`;
-            }
-        },
-        tglA(at) { 
-            const i = this.temp.a.indexOf(at); 
-            if(i>-1) this.temp.a.splice(i,1); else if(this.temp.a.length<6) this.temp.a.push(at);
-            this.step(3);
-        },
-        fin() {
-            const c = CLASSES[this.temp.c];
-            this.db.name = this.temp.n || "USER_UNDEFINED";
-            this.db.class = c.n;
-            this.db.attrs = this.temp.a.map(a => [a, 5+(c.b[a]||0)]);
-            this.db.startDate = new Date().toISOString();
-            this.db.lastAccess = new Date().toISOString();
-            this.save(); 
-            document.getElementById('setup-box').classList.add('hidden'); 
-            this.upd();
-        },
-        reset() { if(confirm("ALERTA: Isso apagará todo o progresso. Confirmar formatação?")) { localStorage.clear(); location.reload(); } }
-    };
-
-    window.onload = () => Sys.start();
-</script>
-
-</body>
+            document.getElementById('m-ui').innerHTML = (this.db.dailyMissions||[]).map((m, i) => `<div class="mission-item ${m.done?'m-done':''}"> <span class="m-title">${m.attr} (+1)</span> <span class="m-desc">${m.task}</span> <button onclick="Sys.completeQuest(${i})">${m.done?'COMPLETED':'COMPLETE'}</button> </div>`).join('');        
+            document.getElementById('a-ui').innerHTML = this.db.attrs.map((a, i) => `<div class="attr-card"><span>${a[0]}</span><input type="number" class="attr-v" value="${a[1]}" onchange="Sys.db.attrs[${i}][1]=parseInt(this.value);Sys.save();Sys.upd()"></div>`).join('');        
+            document.getElementById('s-ui').innerHTML = (this.db.skills||[]).map(s => `<div style="border:1px solid var(--b); padding:5px; font-size:9px; text-align:center; background:var(--shadow);">${s.n}</div>`).join('');        
+        },        
+        
+        step(s) {        
+            const area = document.getElementById('setup-content');        
+            document.getElementById('setup-box').classList.remove('hidden');        
+            if(s===1) { area.innerHTML = `<h3>IDENTIFICATION</h3><input type="text" id="in-n" placeholder="NAME"><button onclick="Sys.db.name=document.getElementById('in-n').value;Sys.step(2)">NEXT</button>`; } 
+            else if(s===2) { area.innerHTML = `<h3>ARCHETYPE</h3>` + ["Guerreiro", "Assassino", "Mago", "Suporte"].map(c => `<button class="setup-btn active" onclick="Sys.db.class='${c}';Sys.step(3)">${c.toUpperCase()}</button>`).join(''); } 
+            else if(s===3) { area.innerHTML = `<h3>DNA CORE (SELECT 10)</h3><div class="grid-3" style="max-height:250px; overflow-y:auto; margin-bottom:10px;">` + Object.keys(QUESTS).map(at => `<div class="setup-btn ${Sys.db.attrs.some(a=>a[0]===at)?'active':''}" style="font-size:9px; padding:8px;" onclick="Sys.tglA('${at}')">${at}</div>`).join('') + `</div><button onclick="if(Sys.db.attrs.length===10) Sys.fin();">AWAKEN</button>`; }        
+        },        
+        
+        tglA(at) { const i = this.db.attrs.findIndex(a => a[0]===at); if(i>-1) this.db.attrs.splice(i,1); else if(this.db.attrs.length<10) this.db.attrs.push([at, 10]); this.step(3); },        
+        fin() { this.db.dayCount = 1; this.db.lastDate = new Date().toDateString(); this.save(); document.getElementById('setup-box').classList.add('hidden'); this.generateMissions(); this.upd(); },        
+        reset() { if(confirm("REBOOT SYSTEM? ALL DATA WIPED.")) { localStorage.clear(); location.reload(); } }        
+    };        
+    document.addEventListener('DOMContentLoaded', () => Sys.start());
+</script>        
+</body>        
 </html>
