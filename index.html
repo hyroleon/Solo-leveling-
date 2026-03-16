@@ -3,342 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHADOW SYSTEM | Hunter Core v14</title>
+    <title>SHADOW SYSTEM | Core v23.1</title>
     <style>
-        :root {
-            --bg: #0a0a0b;
-            --panel: #141417;
-            --accent: #00f2ff;
-            --text: #e0e0e0;
-            --border: #2d2d32;
-        }
-
-        body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background: var(--bg); color: var(--text); margin: 0; padding: 20px;
-            overflow-x: hidden;
-        }
-
-        .main-wrapper { max-width: 1200px; margin: 0 auto; }
-        .container { display: grid; grid-template-columns: 300px 1fr 300px; gap: 20px; }
+        :root { --bg: #050505; --p: #0d0d0d; --a: #00f2ff; --t: #e0e0e0; --b: #1a1a1a; --error: #ff3e3e; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--t); margin: 0; padding: 10px; }
         
-        @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
-
-        .panel { 
-            background: var(--panel); border: 1px solid var(--border); 
-            padding: 20px; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        /* Avatar */
-        .avatar-box {
-            width: 150px; height: 150px; margin: 0 auto 15px;
-            border: 1px solid var(--border); border-radius: 4px;
-            position: relative; overflow: hidden; cursor: pointer;
-            background: #0d0d0f; display: flex; align-items: center; justify-content: center;
-        }
-        .avatar-img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-hint { font-size: 9px; color: #444; text-align: center; text-transform: uppercase; }
-
-        .lvl-display { font-size: 72px; font-weight: 900; color: var(--accent); line-height: 1; text-align: center; }
-        .xp-bar { width: 100%; height: 8px; background: #222; margin: 15px 0; border-radius: 4px; overflow: hidden; }
-        .xp-fill { background: var(--accent); height: 100%; width: 0%; transition: 0.6s; }
-
-        .skill-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .skill-node { 
-            border: 1px solid var(--border); padding: 8px 2px; font-size: 10px; 
-            text-align: center; cursor: pointer; height: 35px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.02);
-        }
-        .unlocked { background: var(--accent) !important; color: #000 !important; font-weight: bold; }
-        .available { border: 2px solid var(--accent); color: var(--accent); }
-        .blocked { opacity: 0.15; cursor: not-allowed; }
-
-        .attr-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #222; }
-        .attr-val-input { background: transparent; border: none; color: var(--accent); text-align: right; width: 50px; font-weight: bold; font-size: 16px; }
-
-        .mission-box { 
-            background: #1a1a1e; border-left: 4px solid var(--accent); padding: 20px; margin-top: 15px; position: relative;
-        }
-        .ai-tag { position: absolute; top: -10px; right: 10px; background: var(--accent); color: #000; font-size: 9px; padding: 2px 8px; font-weight: bold; }
-
-        .overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; overflow-y: auto; padding: 20px; }
-        .creation-card { width: 100%; max-width: 500px; background: #0d0d0f; border: 1px solid #1a1a1e; padding: 30px; }
+        .panel { background: var(--p); border: 1px solid var(--b); padding: 15px; margin-bottom: 10px; position: relative; }
+        .day-counter { position: absolute; top: 10px; right: 10px; font-size: 10px; color: var(--a); border: 1px solid var(--a); padding: 2px 6px; }
         
-        .class-card { border: 1px solid var(--border); padding: 10px; cursor: pointer; margin-bottom: 5px; font-size: 13px; }
-        .class-card.active { border-color: var(--accent); background: rgba(0, 242, 255, 0.05); }
+        .av-box { width: 120px; height: 120px; margin: 0 auto 10px; border: 1px solid var(--a); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
+        .av-img { width: 100%; height: 100%; object-fit: cover; }
 
-        .attr-table { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
-        .attr-chip { border: 1px solid var(--border); padding: 8px; font-size: 10px; text-align: center; cursor: pointer; color: #666; }
-        .attr-chip.selected { border-color: var(--accent); color: var(--accent); }
+        .lvl { font-size: 80px; font-weight: bold; color: var(--a); text-align: center; margin: 10px 0; line-height: 1; }
+        .xp-w { width: 100%; height: 4px; background: #111; margin: 10px 0; }
+        .xp-f { height: 100%; background: var(--a); width: 0%; transition: 0.5s; }
 
-        #popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); border: 2px solid var(--accent); padding: 25px; z-index: 2000; width: 300px; text-align: center; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .node { border: 1px solid var(--b); padding: 10px 2px; font-size: 9px; text-align: center; cursor: pointer; color: #444; text-transform: uppercase; min-height: 35px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .unlocked { background: var(--a) !important; color: #000 !important; font-weight: bold; }
+        .ready { border-color: var(--a); color: var(--a); }
+
+        .attr-row { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #111; }
+        .attr-v { color: var(--a); font-weight: bold; background: transparent; border: none; text-align: right; width: 50px; font-size: 14px; outline: none; }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { background: #080808; border: 1px solid var(--a); padding: 25px; width: 100%; max-width: 400px; box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
         
-        button { cursor: pointer; padding: 12px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-weight: bold; text-transform: uppercase; width: 100%; }
-        button:hover:not(:disabled) { background: var(--accent); color: #000; }
-        button:disabled { opacity: 0.3; }
+        .opt { border: 1px solid var(--b); padding: 12px; margin-bottom: 8px; cursor: pointer; text-align: center; transition: 0.2s; }
+        .opt.sel { border-color: var(--a); background: rgba(0,242,255,0.15); color: var(--a); }
+        
+        .chip-at { border: 1px solid #222; padding: 8px 2px; font-size: 9px; text-align: center; cursor: pointer; }
+        .chip-at.sel { border-color: var(--a); color: var(--a); background: rgba(0,242,255,0.05); }
+
+        button { width: 100%; padding: 14px; background: transparent; border: 1px solid var(--a); color: var(--a); cursor: pointer; font-family: inherit; font-weight: bold; margin: 5px 0; text-transform: uppercase; letter-spacing: 1px; }
+        button:hover { background: var(--a); color: #000; }
         
         .hidden { display: none !important; }
-        input { background: #1a1a1e; border: 1px solid var(--border); color: #fff; padding: 12px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        .mission-tag { font-size: 10px; background: var(--a); color: #000; padding: 2px 8px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
+        
+        .penalty-msg { color: var(--error); font-size: 11px; text-align: center; margin-bottom: 15px; font-weight: bold; animation: blink 1s infinite; border: 1px solid var(--error); padding: 5px; }
+        @keyframes blink { 50% { opacity: 0.3; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="creation-overlay" class="overlay hidden">
-        <div class="creation-card">
-            <h1 style="letter-spacing: 8px; text-align: center; color: var(--accent); margin:0;">DESPERTAR</h1>
-            <div id="step-1">
-                <p style="text-align: center; font-size: 10px; color: #555; margin-bottom: 20px;">IDENTIDADE DO HUNTER</p>
-                <input type="text" id="init-name" placeholder="NOME DO PLAYER" maxlength="15">
-                <button onclick="nextStep(2)">PRÓXIMO</button>
-            </div>
-            <div id="step-2" class="hidden">
-                <p style="text-align: center; font-size: 10px; color: #555; margin-bottom: 20px;">ESCOLHA SUA CLASSE</p>
-                <div id="class-list"></div>
-                <button onclick="nextStep(3)">PRÓXIMO</button>
-            </div>
-            <div id="step-3" class="hidden">
-                <p style="text-align: center; font-size: 10px; color: #555; margin-bottom: 20px;">SELEÇÃO DE DNA (ESCOLHA 6)</p>
-                <div id="attr-selector-table" class="attr-table"></div>
-                <p id="counter-txt" style="text-align: center; font-weight: bold; color: var(--accent); margin: 15px 0;">0/6</p>
-                <button onclick="finalizeCreation()" id="btn-start" disabled>VINCULAR ALMA</button>
-            </div>
-        </div>
+<div id="setup-box" class="overlay hidden">
+    <div class="card" id="setup-content"></div>
+</div>
+
+<div id="pop" class="overlay hidden" onclick="this.classList.add('hidden')">
+    <div class="card" onclick="event.stopPropagation()">
+        <h3 id="pop-t" style="color: var(--a); margin:0; font-size: 18px; text-transform: uppercase;"></h3>
+        <p id="pop-d" style="font-size: 14px; margin: 20px 0; line-height: 1.4; color: #bbb;"></p>
+        <div id="pop-btn"></div>
+        <button onclick="document.getElementById('pop').classList.add('hidden')" style="border:none; font-size:11px; margin-top:15px; color: #555;">[ CANCELAR ]</button>
     </div>
+</div>
 
-    <div id="popup" class="hidden">
-        <h3 id="pop-title" style="color: var(--accent); margin:0;"></h3>
-        <p id="pop-desc" style="font-size: 13px; color: #aaa;"></p>
-        <p id="pop-req" style="font-size: 10px; color: var(--accent); margin-top: 10px;"></p>
-        <div id="pop-actions"></div>
-        <button onclick="closePopup()" style="border:none; font-size:10px; margin-top:10px;">VOLTAR</button>
+<div class="panel">
+    <div class="day-counter" id="day-ui">DIA 01</div>
+    <div id="penalty-ui" class="penalty-msg hidden">ALERTA: PENALIDADE POR INATIVIDADE (-5 XP)</div>
+    <div class="av-box" onclick="document.getElementById('f').click()">
+        <img id="img" class="av-img hidden">
+        <span id="txt-av">UPLOAD_DNA</span>
     </div>
+    <input type="file" id="f" hidden accept="image/*" onchange="Sys.up(this)">
+    
+    <div id="n-ui" style="text-align:center; letter-spacing:4px; font-weight:bold; font-size: 18px; margin-top:10px;">---</div>
+    <div id="c-ui" style="text-align:center; color: var(--a); font-size: 11px; margin-bottom: 10px;">---</div>
+    
+    <div class="lvl" id="l-ui">01</div>
+    <div class="xp-w"><div id="x-ui" class="xp-f"></div></div>
+    <button onclick="Sys.addXP(1)">GRIND MANUAL +1% XP</button>
+</div>
 
-    <div class="main-wrapper">
-        <div class="container">
-            <div class="panel">
-                <div class="avatar-box" onclick="document.getElementById('file-input').click()">
-                    <div id="avatar-display" class="avatar-hint">UPLOAD FOTO</div>
-                    <img id="avatar-img" class="avatar-img hidden">
-                </div>
-                <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
+<div class="panel">
+    <button onclick="Sys.genMission()">BUSCAR MISSÃO DE TREINO</button>
+    <div id="m-ui"></div>
+</div>
 
-                <h3 id="disp-name" style="margin:0; text-align: center; letter-spacing: 2px;">---</h3>
-                <small id="disp-meta" style="color: var(--accent); font-weight: bold; display: block; text-align: center; margin-bottom: 15px;">---</small>
-                
-                <div class="lvl-display" id="lvl-txt">01</div>
-                <div class="xp-bar"><div id="xp-fill" class="xp-fill"></div></div>
-                <button onclick="changeXP(1)" style="font-size: 10px;">GRIND MANUAL (+1%)</button>
-                <button onclick="resetCharacter()" style="border:none; color: #444; font-size:9px; margin-top:20px; width:100%;">RESET TOTAL</button>
-            </div>
+<div class="panel">
+    <div style="font-size:10px; text-align:center; color:#555; margin-bottom:12px; letter-spacing: 2px;">SKILL TREE (PASSIVAS)</div>
+    <div class="grid-3" id="s-ui"></div>
+</div>
 
-            <div class="center-panel">
-                <div class="panel" style="margin-bottom: 20px; border-top: 3px solid var(--accent);">
-                    <button onclick="generateAIContextualMission()">BUSCAR MISSÃO INTELIGENTE</button>
-                    <div id="ai-mission-display"></div>
-                </div>
-                <div class="panel">
-                    <h4 style="color: #444; text-align:center; letter-spacing:4px;">SKILL TREE (PASSIVAS)</h4>
-                    <div id="mission-matrix" class="skill-grid"></div>
-                </div>
-            </div>
+<div class="panel">
+    <div style="font-size:10px; text-align:center; color:#555; margin-bottom:12px; letter-spacing: 2px;">STATUS DO NÚCLEO</div>
+    <div id="a-ui"></div>
+    <button onclick="Sys.reset()" style="border:none; color:#444; font-size:10px; margin-top:20px;">[ FORMATAR SISTEMA ]</button>
+</div>
 
-            <div class="panel">
-                <h4 style="text-align:center;">STATUS BUILD</h4>
-                <div id="attr-container"></div>
-            </div>
-        </div>
-    </div>
+<script>
+    // --- BANCO DE DADOS DE MISSÕES EXPANDIDO ---
+    const MISSION_POOL = {
+        FOR: ["15 Flexões explosivas", "30s de Agachamento na parede", "10 Burpees", "Levantar peso por 5 min", "Prancha abdominal 45s"],
+        VIT: ["Beber 500ml de água gelada", "Comer 1 fruta", "Banho gelado (reset)", "10 min de sol", "Preparar refeição saudável"],
+        AGI: ["1 min de polichinelos", "Alongamento completo 3 min", "Correr no lugar 2 min", "Limpar ambiente de trabalho", "Subir escadas 3x"],
+        INT: ["Ler 5 páginas de um livro", "Estudar 15 min sem interrupções", "Aprender 3 palavras em outro idioma", "Resolver 1 desafio lógico", "Codar/Escrever por 10 min"],
+        CAR: ["Puxar assunto com alguém", "Elogiar sinceramente um colega", "Postar insight profissional", "Treinar oratória no espelho", "Networking: Enviar 1 mensagem"],
+        SAB: ["Meditar 5 minutos", "Escrever 3 gratidões do dia", "Ouvir 15 min de Podcast educativo", "Refletir sobre um erro recente", "Organizar metas da semana"],
+        CON: ["Organizar a lista de tarefas", "Deletar 20 e-mails inúteis", "Limpar a área de trabalho (PC)", "Revisar gastos do dia", "Planejar o dia de amanhã"],
+        def: ["Foco Total: 20 min sem celular", "Organizar a mesa de trabalho", "Beber água e respirar fundo 10x"]
+    };
 
-    <script>
-        const STORAGE_KEY = 'shadow_master_v14_6attr';
-        
-        const semanticBrain = {
-            fisico: ["FOR", "VIT", "DEF", "AGI", "RES", "TEN", "OSS", "VEL", "COR", "FUR"],
-            mental: ["INT", "SAB", "CON", "ALQ", "PER", "PRE"],
-            social: ["CAR", "ART", "INF", "HON", "EMO"],
-            espiritual: ["MANA", "ALMA", "SOM", "RIT", "MAL", "NAT", "ARC"],
-            financeiro: ["SOR", "OURO"]
-        };
+    const SKILLS_DATA = [
+        { n: "Resiliência", d: "Capacidade de manter o foco após falhas." },
+        { n: "Foco Absoluto", d: "Aumenta produtividade em tarefas únicas." },
+        { n: "Mão do Rei", d: "Melhora a capacidade de liderar e delegar." },
+        { n: "Visão Analítica", d: "Facilidade em identificar padrões e erros." },
+        { n: "Comunicação", d: "Expressão clara e persuasiva." },
+        { n: "I. Emocional", d: "Controle sobre reações impulsivas." },
+        { n: "Disciplina", d: "Execução de rotinas sem motivação externa." },
+        { n: "Negociação", d: "Capacidade de fechar acordos vantajosos." },
+        { n: "Leitura Veloz", d: "Absorção rápida de novos conhecimentos." },
+        { n: "Networking", d: "Facilidade em criar conexões úteis." },
+        { n: "P. Crítico", d: "Análise profunda antes de tomar decisões." },
+        { n: "Gestão Mana", d: "Evita o esgotamento mental (Burnout)." },
+        { n: "Otimização", d: "Fazer mais em menos tempo." },
+        { n: "Auto-didata", d: "Aprender habilidades sozinho." },
+        { n: "Empatia", d: "Entender intenções de terceiros." },
+        { n: "Resolução", d: "Neutralizar conflitos rapidamente." },
+        { n: "Adaptável", d: "Manter a calma em mudanças bruscas." },
+        { n: "Presença", d: "Domínio de palco e fala pública." },
+        { n: "Estratégia", d: "Planejamento de longo prazo." },
+        { n: "Paciência", d: "Aguardar o tempo certo do 'drop'." },
+        { n: "Criatividade", d: "Gerar soluções fora da caixa." },
+        { n: "Mente Limpa", d: "Meditação e clareza de pensamento." },
+        { n: "Vigor Físico", d: "Resistência a longas horas de trabalho." },
+        { n: "Finanças", d: "Gestão e multiplicação de recursos." },
+        { n: "Curiosidade", d: "Busca constante por novidades." },
+        { n: "Humildade", d: "Reconhecer que sempre há o que aprender." },
+        { n: "Liderança", d: "Inspirar ação em outras pessoas." },
+        { n: "Poliglota", d: "Facilidade com novas linguagens." },
+        { n: "Escrita", d: "Poder de convencimento via texto." },
+        { n: "Ética", d: "Manter princípios sob pressão." },
+        { n: "Automação", d: "Criar sistemas que trabalham sozinhos." },
+        { n: "Intuição", d: "Confiança no subconsciente treinado." },
+        { n: "Flexibilidade", d: "Alternar entre tarefas diferentes." },
+        { n: "Síntese", d: "Resumir problemas complexos." },
+        { n: "Persistência", d: "Não parar até concluir o objetivo." },
+        { n: "Organização", d: "Manter ambiente e mente limpos." },
+        { n: "Decisividade", d: "Tomar decisões rápidas e seguras." },
+        { n: "Foco no Agora", d: "Estar 100% presente no momento." },
+        { n: "Domínio", d: "Velocidade superior com ferramentas." },
+        { n: "Alinhamento", d: "Sincronia entre planos e execução." },
+        { n: "Sorte", d: "Estar preparado quando a chance surge." },
+        { n: "Storytelling", d: "Tornar fatos em histórias magnéticas." },
+        { n: "Longo Prazo", d: "Sacrifício imediato pelo futuro." },
+        { n: "Antifrágil", d: "Ficar mais forte com o caos." },
+        { n: "Ceticismo", d: "Não acreditar em caminhos fáceis." }
+    ];
 
-        const missionTemplates = {
-            fisico: ["20 Flexões", "Caminhada de 15 min", "Prancha 1 min", "Beber 500ml água"],
-            mental: ["Ler 10 páginas", "Estudar 20 min", "Resolver problema lógico"],
-            social: ["Mensagem de gratidão", "Elogio honesto", "Praticar escuta ativa"],
-            espiritual: ["10 min Meditação", "Banho frio", "Escrever 3 metas"],
-            financeiro: ["Registrar despesas", "Não comprar por impulso", "Estudar 1 ativo"],
-            default: ["Arrumar a cama", "Beber 2L de água"]
-        };
+    const CLASSES = {
+        assassino: { n: "Assassino", b: {AGI:5, PRE:3} },
+        mago: { n: "Mago", b: {INT:5, SAB:3} },
+        guerreiro: { n: "Guerreiro", b: {FOR:5, VIT:3} },
+        bardo: { n: "Bardo", b: {CAR:5, INF:3} },
+        necromante: { n: "Necromante", b: {ALMA:5, RES:3} }
+    };
 
-        const classes = {
-            samurai: { name: "Samurai", bonus: {AGI: 5, PRE: 3}, desc: "Foco em velocidade e precisão." },
-            guerreiro: { name: "Guerreiro", bonus: {FOR: 5, VIT: 3}, desc: "Foco em força e resistência." },
-            bardo: { name: "Bardo", bonus: {CAR: 5, INF: 3}, desc: "Foco em comunicação e arte." },
-            mago: { name: "Mago", bonus: {INT: 5, SAB: 3}, desc: "Foco em estratégia e lógica." },
-            elfo: { name: "Elfo", bonus: {CON: 5, PER: 3}, desc: "Foco em percepção e calma." },
-            necromante: { name: "Necromante", bonus: {ALMA: 5, RES: 3}, desc: "Foco no oculto e resiliência." }
-        };
+    const ALL_ATTRS = ["FOR", "VIT", "DEF", "RES", "TEN", "AGI", "COR", "PRE", "HON", "VEL", "CAR", "SOR", "EMO", "ART", "INF", "INT", "MANA", "CON", "SAB", "ALQ", "SOM", "ALMA", "MAL", "RIT", "OSS", "ARC", "NAT", "PER", "FUR", "OURO"];
 
-        const skills = [
-            { name: "Resiliência", desc: "Recuperar-se de falhas sem perder o foco." },
-            { name: "Foco Absoluto", desc: "Triplicar a produção de trabalho." },
-            { name: "Mão do Rei", desc: "Habilidade de delegar tarefas." },
-            { name: "Visão Analítica", desc: "Prever tendências de mercado." },
-            { name: "Comunicação", desc: "Transmitir ideias de forma simples." },
-            { name: "I. Emocional", desc: "Controlar reações internas." },
-            { name: "Disciplina", desc: "Executar rotinas independente do ânimo." },
-            { name: "Negociação", desc: "Equilíbrio de ganhos mútuos." },
-            { name: "Leitura Veloz", desc: "Absorver informação na metade do tempo." }
-        ];
-        while(skills.length < 45) skills.push({ name: "Maestria", desc: "Domínio avançado de competências." });
+    const Sys = {
+        db: { name: "", class: "", lvl: 1, xp: 0, attrs: [], skills: [], img: null, startDate: null, lastAccess: null, missionDoneToday: false },
 
-        const allAttrs = ["FOR", "VIT", "DEF", "RES", "TEN", "AGI", "COR", "PRE", "HON", "VEL", "CAR", "SOR", "EMO", "ART", "INF", "INT", "MANA", "CON", "SAB", "ALQ", "SOM", "ALMA", "MAL", "RIT", "OSS", "ARC", "NAT", "PER", "FUR", "OURO"];
-
-        let state = { name: "", class: "", lvl: 1, xp: 0, unlockedSkills: [], attrs: [], img: null };
-        let tempSelection = { class: '', attrs: [] };
-
-        function handleImageUpload(input) {
-            const file = input.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => { state.img = e.target.result; save(); refreshUI(); };
-            reader.readAsDataURL(file);
-        }
-
-        function setClass(id) {
-            tempSelection.class = id;
-            document.querySelectorAll('.class-card').forEach(c => c.classList.remove('active'));
-            document.getElementById(`class-${id}`).classList.add('active');
-        }
-
-        function toggleAttr(attr) {
-            const idx = tempSelection.attrs.indexOf(attr);
-            if (idx > -1) tempSelection.attrs.splice(idx, 1);
-            else if (tempSelection.attrs.length < 6) tempSelection.attrs.push(attr);
-            
-            document.querySelectorAll('.attr-chip').forEach(c => {
-                c.classList.toggle('selected', tempSelection.attrs.includes(c.innerText));
-            });
-            
-            document.getElementById('counter-txt').innerText = `${tempSelection.attrs.length}/6 DNA`;
-            document.getElementById('btn-start').disabled = tempSelection.attrs.length !== 6;
-        }
-
-        function nextStep(step) {
-            if(step === 2 && !document.getElementById('init-name').value) return alert("Insira um nome.");
-            if(step === 3 && !tempSelection.class) return alert("Escolha uma classe.");
-            document.getElementById('step-1').classList.add('hidden');
-            document.getElementById('step-2').classList.add('hidden');
-            document.getElementById('step-3').classList.add('hidden');
-            document.getElementById('step-' + step).classList.remove('hidden');
-        }
-
-        function finalizeCreation() {
-            const bc = classes[tempSelection.class];
-            state.name = document.getElementById('init-name').value.toUpperCase();
-            state.class = bc.name;
-            state.attrs = tempSelection.attrs.map(a => [a, 5 + (bc.bonus[a] || 0)]);
-            document.getElementById('creation-overlay').classList.add('hidden');
-            save(); refreshUI();
-        }
-
-        function generateAIContextualMission() {
-            let weakestIdx = 0;
-            for(let i=1; i < state.attrs.length; i++) {
-                if(state.attrs[i][1] < state.attrs[weakestIdx][1]) weakestIdx = i;
+        start() {
+            const s = localStorage.getItem('shadow_v23');
+            if(s) { 
+                this.db = JSON.parse(s); 
+                this.checkPenalty();
+                this.upd(); 
+            } else { 
+                this.step(1); 
             }
-            let attrName = state.attrs[weakestIdx][0];
-            let category = "default";
-            for (let [cat, keywords] of Object.entries(semanticBrain)) {
-                if (keywords.includes(attrName)) { category = cat; break; }
+        },
+
+        save() { localStorage.setItem('shadow_v23', JSON.stringify(this.db)); },
+
+        checkPenalty() {
+            if(!this.db.lastAccess) return;
+            const last = new Date(this.db.lastAccess);
+            const now = new Date();
+            const lastDay = new Date(last.getFullYear(), last.getMonth(), last.getDate());
+            const currentDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const diffDays = Math.floor((currentDay - lastDay) / (1000 * 60 * 60 * 24));
+
+            if(diffDays >= 1) {
+                this.db.xp -= 5;
+                if(this.db.xp < 0) {
+                    if(this.db.lvl > 1) { this.db.lvl--; this.db.xp = 95; }
+                    else { this.db.xp = 0; }
+                }
+                document.getElementById('penalty-ui').classList.remove('hidden');
+                this.db.missionDoneToday = false; 
+                this.db.lastAccess = now.toISOString();
+                this.save();
             }
-            let mission = missionTemplates[category][Math.floor(Math.random() * missionTemplates[category].length)];
-            document.getElementById('ai-mission-display').innerHTML = `
-                <div class="mission-box">
-                    <span class="ai-tag">ANALYSIS</span>
-                    <p style="font-size:11px; margin:0">FOCANDO EM: <b style="color:var(--accent)">${attrName}</b></p>
-                    <p style="margin:10px 0; font-size:16px;"><b>MISSÃO:</b> ${mission}</p>
-                    <button onclick="completeMission(${weakestIdx}, 5)">COMPLETAR (+5% XP)</button>
+        },
+
+        up(input) {
+            const fr = new FileReader();
+            fr.onload = (e) => {
+                const i = new Image();
+                i.onload = () => {
+                    const cv = document.createElement('canvas');
+                    cv.width = 200; cv.height = 200;
+                    cv.getContext('2d').drawImage(i, 0, 0, 200, 200);
+                    this.db.img = cv.toDataURL('image/jpeg', 0.6);
+                    this.save(); this.upd();
+                };
+                i.src = e.target.result;
+            };
+            fr.readAsDataURL(input.files[0]);
+        },
+
+        addXP(v) {
+            this.db.xp += v;
+            while(this.db.xp >= 100) { 
+                this.db.lvl++; 
+                this.db.xp -= 100; 
+                alert("SISTEMA: NÍVEL ELEVADO!"); 
+            }
+            this.db.lastAccess = new Date().toISOString();
+            this.save(); this.upd();
+        },
+
+        completeMission(attrName) {
+            const attrIndex = this.db.attrs.findIndex(a => a[0] === attrName);
+            if(attrIndex !== -1) { this.db.attrs[attrIndex][1] += 1; }
+            this.db.missionDoneToday = true;
+            this.addXP(5);
+            document.getElementById('m-ui').innerHTML = '';
+        },
+
+        genMission() {
+            // Busca o atributo com menor valor para sugerir treino
+            let weakest = this.db.attrs.reduce((p, c) => c[1] < p[1] ? c : p);
+            let attrName = weakest[0];
+            
+            // Seleciona missão aleatória da categoria ou fallback
+            const pool = MISSION_POOL[attrName] || MISSION_POOL.def;
+            const task = pool[Math.floor(Math.random() * pool.length)];
+            
+            document.getElementById('m-ui').innerHTML = `
+                <div style="border:1px dashed var(--a); padding:15px; margin-top:15px; font-size:13px; background: rgba(0,242,255,0.03); animation: fadeIn 0.4s;">
+                    <span class="mission-tag">DATA_TARGET: ${attrName}</span>
+                    <p style="color:#fff; margin:10px 0; line-height:1.4;">> ${task}</p>
+                    <button onclick="Sys.completeMission('${attrName}')" style="padding:8px; font-size:11px; margin-top:5px; border-style:double;">CONCLUIR (+1 ${attrName} / +5% XP)</button>
                 </div>`;
-        }
+        },
 
-        function completeMission(idx, amt) {
-            state.attrs[idx][1] += 1;
-            changeXP(amt);
-            document.getElementById('ai-mission-display').innerHTML = '';
-        }
+        upd() {
+            document.getElementById('n-ui').innerText = this.db.name;
+            document.getElementById('c-ui').innerText = this.db.class.toUpperCase();
+            document.getElementById('l-ui').innerText = String(this.db.lvl).padStart(2, '0');
+            document.getElementById('x-ui').style.width = this.db.xp + '%';
+            
+            if(this.db.startDate) {
+                const start = new Date(this.db.startDate);
+                const diff = Math.floor((new Date() - start) / (1000 * 60 * 60 * 24)) + 1;
+                document.getElementById('day-ui').innerText = `DIA ${String(diff).padStart(2, '0')}`;
+            }
 
-        function renderSkills() {
-            const matrix = document.getElementById('mission-matrix');
-            let html = '';
-            for(let i = 0; i < 15; i++) {
-                const req = (i + 1) * 5; 
-                const indices = [i*3, i*3+1, i*3+2];
-                const tierTaken = state.unlockedSkills.some(idx => indices.includes(idx));
-                indices.forEach(idx => {
-                    const isUnlocked = state.unlockedSkills.includes(idx);
-                    const canUnlock = state.lvl >= req && !tierTaken;
-                    const status = isUnlocked ? 'unlocked' : (canUnlock ? 'available' : (tierTaken ? 'blocked' : ''));
-                    html += `<div class="skill-node ${status}" onclick="openSkill(${idx}, ${req}, ${isUnlocked}, ${canUnlock})">${skills[idx].name.substring(0,5)}.</div>`;
+            if(this.db.img) { 
+                document.getElementById('img').src = this.db.img; 
+                document.getElementById('img').classList.remove('hidden'); 
+                document.getElementById('txt-av').classList.add('hidden'); 
+            }
+            
+            document.getElementById('a-ui').innerHTML = this.db.attrs.map((a, i) => `
+                <div class="attr-row"><span>${a[0]}</span><input type="number" class="attr-v" value="${a[1]}" onchange="Sys.db.attrs[${i}][1]=parseInt(this.value);Sys.save()"></div>
+            `).join('');
+
+            let sH = '';
+            for(let i=0; i<15; i++){
+                const req = (i+1)*5;
+                [i*3, i*3+1, i*3+2].forEach(id => {
+                    const has = this.db.skills.includes(id);
+                    const can = this.db.lvl >= req;
+                    const cls = has ? 'unlocked' : (can ? 'ready' : '');
+                    sH += `<div class="node ${cls}" onclick="Sys.openS(${id},${req},${has},${can})">${SKILLS_DATA[id].n.substring(0,6)}.</div>`;
                 });
             }
-            matrix.innerHTML = html;
-        }
+            document.getElementById('s-ui').innerHTML = sH;
+        },
 
-        function openSkill(id, req, unlocked, available) {
-            document.getElementById('pop-title').innerText = skills[id].name.toUpperCase();
-            document.getElementById('pop-desc').innerText = skills[id].desc;
-            document.getElementById('pop-req').innerText = `REQUISITO: NÍVEL ${req}`;
-            const action = document.getElementById('pop-actions');
-            if(unlocked) action.innerHTML = 'ATIVA';
-            else if(available) action.innerHTML = `<button onclick="buySkill(${id})">ADQUIRIR</button>`;
-            else action.innerHTML = `BLOQUEADO`;
-            document.getElementById('popup').classList.remove('hidden');
-        }
+        openS(id, req, has, can) {
+            document.getElementById('pop-t').innerText = SKILLS_DATA[id].n;
+            document.getElementById('pop-d').innerText = SKILLS_DATA[id].d + " [REQ: LVL "+req+"]";
+            document.getElementById('pop-btn').innerHTML = has ? '<div style="color:var(--a); text-align:center; font-weight:bold;">HABILIDADE ATIVA</div>' : (can ? `<button onclick="Sys.db.skills.push(${id});Sys.save();Sys.upd();document.getElementById('pop').classList.add('hidden')">ADQUIRIR HABILIDADE</button>` : '<div style="color:#444; text-align:center;">NÍVEL INSUFICIENTE</div>');
+            document.getElementById('pop').classList.remove('hidden');
+        },
 
-        function buySkill(id) { state.unlockedSkills.push(id); save(); closePopup(); refreshUI(); }
-        function closePopup() { document.getElementById('popup').classList.add('hidden'); }
-
-        function changeXP(amt) {
-            state.xp += amt;
-            while(state.xp >= 100) { state.lvl++; state.xp -= 100; alert(`LEVEL UP! Nível ${state.lvl}`); }
-            save(); refreshUI();
-        }
-
-        function refreshUI() {
-            document.getElementById('disp-name').innerText = state.name;
-            document.getElementById('disp-meta').innerText = state.class.toUpperCase();
-            document.getElementById('lvl-txt').innerText = state.lvl.toString().padStart(2, '0');
-            document.getElementById('xp-fill').style.width = state.xp + '%';
+        temp: { n:'', c:'', a:[] },
+        step(s) {
+            const area = document.getElementById('setup-content');
+            document.getElementById('setup-box').classList.remove('hidden');
             
-            if(state.img) {
-                document.getElementById('avatar-img').src = state.img;
-                document.getElementById('avatar-img').classList.remove('hidden');
-                document.getElementById('avatar-display').classList.add('hidden');
+            if(s===1) {
+                area.innerHTML = `
+                <h3 style="color:var(--a); margin-top:0;">IDENTIFICAÇÃO</h3>
+                <input type="text" id="in-n" placeholder="Digite seu nome"
+                style="width:100%; height:45px; padding:12px; font-size:16px; background:#000; color:#fff; border:1px solid #222; outline:none; margin:10px 0 15px 0;">
+                <button onclick="Sys.temp.n=document.getElementById('in-n').value;Sys.step(2)">PRÓXIMO</button>`;
             }
-
-            document.getElementById('attr-container').innerHTML = state.attrs.map((a, i) => `
-                <div class="attr-item"><span>${a[0]}</span><input type="number" class="attr-val-input" value="${a[1]}" onchange="state.attrs[${i}][1]=parseInt(this.value)||0;save();"></div>
-            `).join('');
-            renderSkills();
-        }
-
-        function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-        function resetCharacter() { if(confirm("REINICIAR TUDO?")) { localStorage.clear(); location.reload(); } }
-
-        window.onload = () => {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) { state = JSON.parse(saved); refreshUI(); } 
-            else { 
-                document.getElementById('creation-overlay').classList.remove('hidden'); 
-                document.getElementById('class-list').innerHTML = Object.entries(classes).map(([id, c]) => `
-                    <div class="class-card" id="class-${id}" onclick="setClass('${id}')">
-                        <strong>${c.name}</strong><br><small>${c.desc}</small>
-                    </div>
-                `).join('');
-                document.getElementById('attr-selector-table').innerHTML = allAttrs.map(attr => `<div class="attr-chip" onclick="toggleAttr('${attr}')">${attr}</div>`).join('');
+            else if(s===2) {
+                area.innerHTML = `<h3 style="color:var(--a); margin-top:0;">ESCOLHA SUA CLASSE</h3>` + 
+                Object.entries(CLASSES).map(([k,v])=>`<div class="opt ${this.temp.c===k?'sel':''}" onclick="Sys.temp.c='${k}';Sys.step(2)">${v.n}</div>`).join('') + 
+                `<button onclick="if(Sys.temp.c) Sys.step(3); else alert('Selecione uma classe')">PRÓXIMO</button>`;
             }
-        }
-    </script>
+            else if(s===3) {
+                area.innerHTML = `<h3 style="color:var(--a); margin-top:0;">DNA (SELECIONE 6)</h3><div style="display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin-bottom:15px;">` + 
+                ALL_ATTRS.map(at => `<div class="chip-at ${this.temp.a.includes(at)?'sel':''}" onclick="Sys.tglA('${at}')">${at}</div>`).join('') + 
+                `</div><button onclick="if(Sys.temp.a.length===6) Sys.fin(); else alert('Selecione exatamente 6 atributos')">INICIALIZAR NÚCLEO</button>`;
+            }
+        },
+        tglA(at) { 
+            const i = this.temp.a.indexOf(at); 
+            if(i>-1) this.temp.a.splice(i,1); else if(this.temp.a.length<6) this.temp.a.push(at);
+            this.step(3);
+        },
+        fin() {
+            const c = CLASSES[this.temp.c];
+            this.db.name = this.temp.n || "USER_UNDEFINED";
+            this.db.class = c.n;
+            this.db.attrs = this.temp.a.map(a => [a, 5+(c.b[a]||0)]);
+            this.db.startDate = new Date().toISOString();
+            this.db.lastAccess = new Date().toISOString();
+            this.save(); 
+            document.getElementById('setup-box').classList.add('hidden'); 
+            this.upd();
+        },
+        reset() { if(confirm("ALERTA: Isso apagará todo o progresso. Confirmar formatação?")) { localStorage.clear(); location.reload(); } }
+    };
+
+    window.onload = () => Sys.start();
+</script>
+
 </body>
 </html>
