@@ -9,7 +9,8 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-html,body{
+html,
+body{
     margin:0;
     width:100%;
     height:100%;
@@ -31,7 +32,7 @@ html,body{
     height:100%;
     overflow:hidden;
     background:black;
-    border-radius:20px;
+    border-radius:24px;
 }
 
 .layer{
@@ -53,9 +54,9 @@ html,body{
     left:50%;
     width:2px;
     background:#00f0ff;
-    z-index:50;
     transform:translateX(-50%);
-    box-shadow:0 0 15px #00f0ff;
+    z-index:40;
+    box-shadow:0 0 12px #00f0ff;
 }
 
 #slider::after{
@@ -65,15 +66,15 @@ html,body{
     left:50%;
     transform:translate(-50%,-50%);
     padding:6px 10px;
+    border-radius:10px;
     background:black;
     border:1px solid #00f0ff;
-    border-radius:8px;
     color:#00f0ff;
     font-size:10px;
 }
 
 .progressGlow{
-    box-shadow:0 0 12px rgba(0,240,255,.6);
+    box-shadow:0 0 14px rgba(0,240,255,.6);
 }
 
 canvas{
@@ -84,7 +85,8 @@ canvas{
 
 <body class="w-screen h-screen flex flex-col">
 
-<header class="shrink-0 p-4 border-b border-white/10 flex items-center justify-between">
+<!-- HEADER -->
+<header class="shrink-0 border-b border-white/10 p-4 flex items-center justify-between">
 
     <div>
         <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
@@ -103,12 +105,15 @@ canvas{
 
 </header>
 
+<!-- MAIN -->
 <main class="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4">
 
     <!-- SIDEBAR -->
     <aside class="glass rounded-3xl p-5 w-full lg:w-80 shrink-0 flex flex-col gap-5 overflow-auto">
 
+        <!-- SCALE -->
         <div>
+
             <div class="text-xs uppercase text-zinc-500 mb-2">
                 Escala
             </div>
@@ -126,11 +131,14 @@ canvas{
                 </button>
 
             </div>
+
         </div>
 
+        <!-- SHARPNESS -->
         <div>
+
             <div class="text-xs uppercase text-zinc-500 mb-2">
-                Intensidade
+                Nitidez
             </div>
 
             <input id="sharpnessRange"
@@ -140,11 +148,14 @@ canvas{
                    step="0.01"
                    value="1.22"
                    class="w-full">
+
         </div>
 
+        <!-- COLORS -->
         <div>
+
             <div class="text-xs uppercase text-zinc-500 mb-2">
-                Cores
+                Vibrance
             </div>
 
             <input id="vibranceRange"
@@ -154,15 +165,19 @@ canvas{
                    step="0.01"
                    value="1.16"
                    class="w-full">
+
         </div>
 
+        <!-- FORMAT -->
         <div>
+
             <div class="text-xs uppercase text-zinc-500 mb-2">
-                Exportação
+                Formato
             </div>
 
             <select id="formatSelect"
                     class="w-full bg-zinc-950 border border-white/10 rounded-2xl p-3">
+
                 <option value="image/png">
                     PNG
                 </option>
@@ -170,13 +185,16 @@ canvas{
                 <option value="image/jpeg">
                     JPG
                 </option>
+
             </select>
+
         </div>
 
+        <!-- BUTTONS -->
         <div class="flex flex-col gap-3">
 
             <button id="startBtn"
-                    class="bg-white text-black font-bold rounded-2xl py-4">
+                    class="bg-white text-black font-bold rounded-2xl py-4 disabled:opacity-40">
                 Iniciar Upscale
             </button>
 
@@ -192,6 +210,7 @@ canvas{
 
         </div>
 
+        <!-- PROGRESS -->
         <div>
 
             <div class="flex justify-between text-xs mb-2">
@@ -217,14 +236,15 @@ canvas{
 
         </div>
 
+        <!-- INFO -->
         <div class="text-xs text-zinc-500 leading-relaxed">
-            • Ultra sharpen premium<br>
-            • Color vibrance inteligente<br>
-            • Clarity enhancement<br>
-            • Tile rendering<br>
             • Mobile optimized<br>
-            • RAM optimized<br>
-            • Android safe
+            • Tile rendering<br>
+            • Ultra sharpen<br>
+            • Color recovery<br>
+            • Texture enhancement<br>
+            • Android safe<br>
+            • Low RAM usage
         </div>
 
     </aside>
@@ -234,12 +254,13 @@ canvas{
 
         <!-- UPLOAD -->
         <div id="uploadUI"
-             class="absolute inset-0 z-30 flex items-center justify-center p-6">
+             class="absolute inset-0 z-50 flex items-center justify-center p-6">
 
-            <div id="dropZone"
-                 class="w-full h-full border-2 border-dashed border-zinc-700 rounded-3xl bg-black/30 flex flex-col items-center justify-center cursor-pointer">
+            <label for="fileInput"
+                   id="dropZone"
+                   class="w-full h-full border-2 border-dashed border-zinc-700 rounded-3xl bg-black/30 flex flex-col items-center justify-center cursor-pointer active:scale-[0.99] transition-all">
 
-                <div class="text-center">
+                <div class="text-center pointer-events-none">
 
                     <div class="text-6xl mb-4">
                         ⬆
@@ -255,17 +276,17 @@ canvas{
 
                 </div>
 
-                <input id="fileInput"
-                       type="file"
-                       accept="image/png,image/jpeg,image/webp"
-                       hidden>
+            </label>
 
-            </div>
+            <input id="fileInput"
+                   type="file"
+                   accept="image/png,image/jpeg,image/webp"
+                   class="hidden">
 
         </div>
 
-        <!-- VIEWER -->
-        <div id="viewer" class="hidden">
+        <!-- VIEW -->
+        <div id="viewer" class="hidden w-full h-full">
 
             <img id="originalImage"
                  class="layer">
@@ -289,9 +310,6 @@ canvas{
 
 const fileInput =
 document.getElementById('fileInput');
-
-const dropZone =
-document.getElementById('dropZone');
 
 const uploadUI =
 document.getElementById('uploadUI');
@@ -345,13 +363,13 @@ document.querySelectorAll('.scaleBtn');
    GLOBALS
 ========================================================= */
 
-let currentScale = 2;
-
 let bitmap = null;
 
-let worker = null;
+let currentScale = 2;
 
 let processing = false;
+
+let worker = null;
 
 /* =========================================================
    BACKEND
@@ -367,10 +385,10 @@ async function detectBackend(){
         return 'webgpu';
     }
 
-    const c =
+    const canvas =
     document.createElement('canvas');
 
-    if(c.getContext('webgl2')){
+    if(canvas.getContext('webgl2')){
 
         backendBadge.textContent =
         'WebGL';
@@ -387,7 +405,7 @@ async function detectBackend(){
 detectBackend();
 
 /* =========================================================
-   SCALE BUTTONS
+   SCALE
 ========================================================= */
 
 scaleBtns.forEach(btn=>{
@@ -415,13 +433,7 @@ scaleBtns.forEach(btn=>{
    FILE LOAD
 ========================================================= */
 
-dropZone.addEventListener('click',()=>{
-
-    fileInput.click();
-
-});
-
-fileInput.addEventListener('change',async e=>{
+fileInput.addEventListener('change', async e=>{
 
     const file =
     e.target.files[0];
@@ -456,11 +468,11 @@ startBtn.addEventListener('click',()=>{
 
     processing = true;
 
-    cancelBtn.classList.remove('hidden');
-
     startBtn.disabled = true;
 
-    processImage();
+    cancelBtn.classList.remove('hidden');
+
+    startProcessing();
 });
 
 /* =========================================================
@@ -479,28 +491,26 @@ cancelBtn.addEventListener('click',()=>{
    PROCESS
 ========================================================= */
 
-async function processImage(){
+async function startProcessing(){
 
     const backend =
     await detectBackend();
 
-    const workerCode =
-    createWorker();
-
-    const blob =
-    new Blob([workerCode],{
+    const workerBlob =
+    new Blob([workerCode()],{
         type:'application/javascript'
     });
 
     worker =
     new Worker(
-        URL.createObjectURL(blob)
+        URL.createObjectURL(workerBlob)
     );
 
     worker.onmessage =
-    async e => {
+    async e=>{
 
-        const data = e.data;
+        const data =
+        e.data;
 
         if(data.type === 'progress'){
 
@@ -512,7 +522,7 @@ async function processImage(){
 
         if(data.type === 'done'){
 
-            await renderResult(
+            await renderFinal(
                 data.bitmap
             );
 
@@ -547,14 +557,12 @@ async function processImage(){
    RENDER
 ========================================================= */
 
-async function renderResult(resultBitmap){
+async function renderFinal(resultBitmap){
 
     updateProgress(
-        92,
-        'Melhorando nitidez'
+        90,
+        'Melhorando imagem'
     );
-
-    await nextFrame();
 
     const ctx =
     upscaledCanvas.getContext('2d',{
@@ -581,19 +589,13 @@ async function renderResult(resultBitmap){
         upscaledCanvas.height
     );
 
-    await nextFrame();
-
     await clarityPass(
         ctx,
         upscaledCanvas.width,
         upscaledCanvas.height
     );
 
-    await nextFrame();
-
     await enhanceColors(ctx);
-
-    await nextFrame();
 
     await textureRecovery(
         ctx,
@@ -637,21 +639,31 @@ async function ultraSharpen(ctx,w,h){
     ctx.filter =
     'blur(0.6px)';
 
-    ctx.drawImage(temp,0,0);
+    ctx.drawImage(
+        temp,
+        0,
+        0
+    );
 
     ctx.globalCompositeOperation =
     'overlay';
 
     ctx.filter =
     \`contrast(\${intensity})
-     saturate(1.08)\`;
+      saturate(1.08)\`;
 
-    ctx.drawImage(temp,0,0);
+    ctx.drawImage(
+        temp,
+        0,
+        0
+    );
 
     ctx.globalCompositeOperation =
     'source-over';
 
     ctx.filter = 'none';
+
+    await yieldThread();
 }
 
 /* =========================================================
@@ -678,6 +690,8 @@ async function clarityPass(ctx,w,h){
     'source-over';
 
     ctx.filter = 'none';
+
+    await yieldThread();
 }
 
 /* =========================================================
@@ -691,13 +705,10 @@ async function enhanceColors(ctx){
         vibranceRange.value
     );
 
-    ctx.globalCompositeOperation =
-    'source-over';
-
     ctx.filter =
     \`contrast(1.12)
-     saturate(\${vibrance})
-     brightness(1.03)\`;
+      saturate(\${vibrance})
+      brightness(1.03)\`;
 
     ctx.drawImage(
         ctx.canvas,
@@ -706,6 +717,8 @@ async function enhanceColors(ctx){
     );
 
     ctx.filter = 'none';
+
+    await yieldThread();
 }
 
 /* =========================================================
@@ -729,16 +742,17 @@ async function textureRecovery(ctx,w,h){
             hh
         );
 
-        const d = img.data;
+        const d =
+        img.data;
 
         for(let i=0;i<d.length;i+=4){
 
             const grain =
-            (Math.random() - .5) * 1.4;
+            (Math.random()-.5)*1.2;
 
-            d[i] += grain;
-            d[i+1] += grain;
-            d[i+2] += grain;
+            d[i]+=grain;
+            d[i+1]+=grain;
+            d[i+2]+=grain;
         }
 
         ctx.putImageData(
@@ -929,13 +943,6 @@ function cleanup(){
    UTILS
 ========================================================= */
 
-function nextFrame(){
-
-    return new Promise(r=>
-        requestAnimationFrame(r)
-    );
-}
-
 function yieldThread(){
 
     return new Promise(r=>
@@ -947,7 +954,7 @@ function yieldThread(){
    WORKER
 ========================================================= */
 
-function createWorker(){
+function workerCode(){
 
 return \`
 
@@ -976,7 +983,7 @@ self.onmessage = async e => {
         self.postMessage({
             type:'progress',
             progress:5,
-            status:'Preparando tiles'
+            status:'Preparando imagem'
         });
 
         const targetW =
