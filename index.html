@@ -1,27 +1,15 @@
-<!--
-NEXUS AI ULTRA
-PROFESSIONAL AI UPSCALE ENGINE
-MOBILE OPTIMIZED
-SINGLE FILE VERSION
--->
-
 <!DOCTYPE html>
 <html lang="pt-BR" class="dark">
-
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-
-<title>NexusAI Ultra</title>
+<title>NexusAI Ultra Pro</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-
-html,
-body{
+html,body{
     margin:0;
     width:100%;
     height:100%;
@@ -32,7 +20,7 @@ body{
 }
 
 .glass{
-    background:rgba(15,15,18,.72);
+    background:rgba(18,18,20,.72);
     backdrop-filter:blur(18px);
     border:1px solid rgba(255,255,255,.08);
 }
@@ -43,7 +31,7 @@ body{
     height:100%;
     overflow:hidden;
     background:black;
-    border-radius:18px;
+    border-radius:20px;
 }
 
 .layer{
@@ -54,7 +42,7 @@ body{
     object-fit:contain;
 }
 
-#upscaled{
+#upscaledCanvas{
     clip-path:polygon(50% 0,100% 0,100% 100%,50% 100%);
 }
 
@@ -62,12 +50,12 @@ body{
     position:absolute;
     top:0;
     bottom:0;
-    width:2px;
     left:50%;
+    width:2px;
+    background:#00f0ff;
+    z-index:50;
     transform:translateX(-50%);
-    background:#00e5ff;
-    z-index:20;
-    box-shadow:0 0 12px #00e5ff;
+    box-shadow:0 0 15px #00f0ff;
 }
 
 #slider::after{
@@ -76,99 +64,105 @@ body{
     top:50%;
     left:50%;
     transform:translate(-50%,-50%);
+    padding:6px 10px;
     background:black;
-    border:1px solid #00e5ff;
-    padding:6px 8px;
+    border:1px solid #00f0ff;
     border-radius:8px;
-    color:#00e5ff;
+    color:#00f0ff;
     font-size:10px;
 }
 
 .progressGlow{
-    box-shadow:0 0 18px rgba(0,229,255,.5);
-}
-
-.hidden{
-    display:none!important;
-}
-
-button{
-    transition:.2s;
-}
-
-button:active{
-    transform:scale(.98);
+    box-shadow:0 0 12px rgba(0,240,255,.6);
 }
 
 canvas{
     image-rendering:auto;
 }
-
 </style>
 </head>
 
-<body class="flex flex-col">
+<body class="w-screen h-screen flex flex-col">
 
-<header class="p-4 border-b border-white/10 flex items-center justify-between shrink-0">
+<header class="shrink-0 p-4 border-b border-white/10 flex items-center justify-between">
 
     <div>
-
-        <div class="text-xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            NexusAI Ultra
-        </div>
+        <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+            NexusAI Ultra Pro
+        </h1>
 
         <div class="text-xs text-zinc-500">
             AI Super Resolution Engine
         </div>
-
     </div>
 
-    <div id="backend"
-         class="text-xs px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
-
+    <div id="backendBadge"
+         class="px-3 py-1 rounded-full text-xs bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
         Detectando...
-
     </div>
 
 </header>
 
-<main class="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-hidden">
+<main class="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4">
 
     <!-- SIDEBAR -->
-
-    <aside class="glass rounded-2xl p-4 w-full lg:w-80 flex flex-col gap-4 shrink-0">
+    <aside class="glass rounded-3xl p-5 w-full lg:w-80 shrink-0 flex flex-col gap-5 overflow-auto">
 
         <div>
-
             <div class="text-xs uppercase text-zinc-500 mb-2">
                 Escala
             </div>
 
             <div class="grid grid-cols-2 gap-2">
 
-                <button class="scaleBtn bg-cyan-500 text-black font-bold py-3 rounded-xl"
+                <button class="scaleBtn bg-cyan-500 text-black font-bold rounded-2xl py-3"
                         data-scale="2">
                     2x
                 </button>
 
-                <button class="scaleBtn bg-zinc-900 text-zinc-400 py-3 rounded-xl"
+                <button class="scaleBtn bg-zinc-900 text-zinc-400 rounded-2xl py-3"
                         data-scale="4">
                     4x
                 </button>
 
             </div>
-
         </div>
 
         <div>
+            <div class="text-xs uppercase text-zinc-500 mb-2">
+                Intensidade
+            </div>
 
+            <input id="sharpnessRange"
+                   type="range"
+                   min="1"
+                   max="2"
+                   step="0.01"
+                   value="1.22"
+                   class="w-full">
+        </div>
+
+        <div>
+            <div class="text-xs uppercase text-zinc-500 mb-2">
+                Cores
+            </div>
+
+            <input id="vibranceRange"
+                   type="range"
+                   min="1"
+                   max="1.4"
+                   step="0.01"
+                   value="1.16"
+                   class="w-full">
+        </div>
+
+        <div>
             <div class="text-xs uppercase text-zinc-500 mb-2">
                 Exportação
             </div>
 
-            <select id="format"
-                    class="w-full bg-zinc-950 border border-white/10 rounded-xl p-3">
-
+            <select id="formatSelect"
+                    class="w-full bg-zinc-950 border border-white/10 rounded-2xl p-3">
                 <option value="image/png">
                     PNG
                 </option>
@@ -176,75 +170,47 @@ canvas{
                 <option value="image/jpeg">
                     JPG
                 </option>
-
             </select>
+        </div>
+
+        <div class="flex flex-col gap-3">
+
+            <button id="startBtn"
+                    class="bg-white text-black font-bold rounded-2xl py-4">
+                Iniciar Upscale
+            </button>
+
+            <button id="cancelBtn"
+                    class="hidden bg-red-500/10 border border-red-500/30 text-red-300 rounded-2xl py-3">
+                Cancelar
+            </button>
+
+            <button id="downloadBtn"
+                    class="hidden bg-cyan-500 text-black font-bold rounded-2xl py-4">
+                Baixar
+            </button>
 
         </div>
 
         <div>
 
-            <div class="text-xs uppercase text-zinc-500 mb-2">
-                Qualidade
-            </div>
-
-            <input id="quality"
-                   type="range"
-                   min="0.7"
-                   max="1"
-                   step="0.01"
-                   value="0.94"
-                   class="w-full">
-
-        </div>
-
-        <div class="flex flex-col gap-2">
-
-            <button id="start"
-                    class="bg-white text-black font-bold py-4 rounded-xl disabled:opacity-40">
-
-                Iniciar Upscale
-
-            </button>
-
-            <button id="cancel"
-                    class="hidden bg-red-500/10 border border-red-500/30 text-red-300 py-3 rounded-xl">
-
-                Cancelar
-
-            </button>
-
-            <button id="download"
-                    class="hidden bg-cyan-500 text-black font-bold py-4 rounded-xl">
-
-                Baixar
-
-            </button>
-
-        </div>
-
-        <div class="border-t border-white/10 pt-4">
-
             <div class="flex justify-between text-xs mb-2">
 
-                <div id="status"
+                <div id="statusText"
                      class="text-cyan-300">
-
                     Aguardando imagem
-
                 </div>
 
-                <div id="percent">
-
+                <div id="progressText">
                     0%
-
                 </div>
 
             </div>
 
             <div class="w-full h-2 bg-zinc-900 rounded-full overflow-hidden">
 
-                <div id="bar"
-                     class="h-full w-0 bg-cyan-400 progressGlow transition-all">
+                <div id="progressBar"
+                     class="h-full w-0 bg-cyan-400 progressGlow transition-all duration-300">
                 </div>
 
             </div>
@@ -252,45 +218,44 @@ canvas{
         </div>
 
         <div class="text-xs text-zinc-500 leading-relaxed">
-
-            • Tile rendering inteligente<br>
-            • Android otimizado<br>
-            • Memória controlada<br>
-            • Nitidez premium<br>
-            • Cor adaptativa<br>
-            • Contraste cinematográfico
-
+            • Ultra sharpen premium<br>
+            • Color vibrance inteligente<br>
+            • Clarity enhancement<br>
+            • Tile rendering<br>
+            • Mobile optimized<br>
+            • RAM optimized<br>
+            • Android safe
         </div>
 
     </aside>
 
     <!-- VIEWER -->
+    <section class="flex-1 glass rounded-3xl overflow-hidden relative">
 
-    <section class="flex-1 glass rounded-2xl overflow-hidden relative">
+        <!-- UPLOAD -->
+        <div id="uploadUI"
+             class="absolute inset-0 z-30 flex items-center justify-center p-6">
 
-        <div id="upload"
-             class="absolute inset-0 z-20 p-6 flex items-center justify-center">
-
-            <div id="drop"
-                 class="w-full h-full rounded-2xl border-2 border-dashed border-zinc-700 bg-black/20 flex flex-col items-center justify-center cursor-pointer">
+            <div id="dropZone"
+                 class="w-full h-full border-2 border-dashed border-zinc-700 rounded-3xl bg-black/30 flex flex-col items-center justify-center cursor-pointer">
 
                 <div class="text-center">
 
-                    <div class="text-5xl mb-4">
+                    <div class="text-6xl mb-4">
                         ⬆
                     </div>
 
-                    <div class="text-lg font-semibold">
-                        Arraste ou selecione imagem
+                    <div class="font-bold text-xl">
+                        Selecione sua imagem
                     </div>
 
-                    <div class="text-sm text-zinc-500 mt-2">
-                        PNG • JPG • WEBP
+                    <div class="text-zinc-500 text-sm mt-2">
+                        JPG • PNG • WEBP
                     </div>
 
                 </div>
 
-                <input id="file"
+                <input id="fileInput"
                        type="file"
                        accept="image/png,image/jpeg,image/webp"
                        hidden>
@@ -299,13 +264,13 @@ canvas{
 
         </div>
 
-        <div id="viewer"
-             class="hidden">
+        <!-- VIEWER -->
+        <div id="viewer" class="hidden">
 
-            <img id="original"
+            <img id="originalImage"
                  class="layer">
 
-            <canvas id="upscaled"
+            <canvas id="upscaledCanvas"
                     class="layer"></canvas>
 
             <div id="slider"></div>
@@ -319,67 +284,70 @@ canvas{
 <script type="module">
 
 /* =========================================================
-   DOM
+   ELEMENTS
 ========================================================= */
 
 const fileInput =
-document.getElementById('file');
+document.getElementById('fileInput');
 
-const drop =
-document.getElementById('drop');
+const dropZone =
+document.getElementById('dropZone');
 
-const upload =
-document.getElementById('upload');
+const uploadUI =
+document.getElementById('uploadUI');
 
 const viewer =
 document.getElementById('viewer');
 
-const original =
-document.getElementById('original');
+const originalImage =
+document.getElementById('originalImage');
 
-const upscaled =
-document.getElementById('upscaled');
+const upscaledCanvas =
+document.getElementById('upscaledCanvas');
 
 const slider =
 document.getElementById('slider');
 
 const startBtn =
-document.getElementById('start');
+document.getElementById('startBtn');
 
 const cancelBtn =
-document.getElementById('cancel');
+document.getElementById('cancelBtn');
 
 const downloadBtn =
-document.getElementById('download');
-
-const statusText =
-document.getElementById('status');
-
-const progressText =
-document.getElementById('percent');
+document.getElementById('downloadBtn');
 
 const progressBar =
-document.getElementById('bar');
+document.getElementById('progressBar');
+
+const progressText =
+document.getElementById('progressText');
+
+const statusText =
+document.getElementById('statusText');
 
 const backendBadge =
-document.getElementById('backend');
+document.getElementById('backendBadge');
+
+const sharpnessRange =
+document.getElementById('sharpnessRange');
+
+const vibranceRange =
+document.getElementById('vibranceRange');
 
 const formatSelect =
-document.getElementById('format');
-
-const qualityRange =
-document.getElementById('quality');
+document.getElementById('formatSelect');
 
 const scaleBtns =
 document.querySelectorAll('.scaleBtn');
 
 /* =========================================================
-   STATE
+   GLOBALS
 ========================================================= */
 
-let bitmap = null;
+let currentScale = 2;
 
-let scale = 2;
+let bitmap = null;
 
 let worker = null;
 
@@ -399,10 +367,10 @@ async function detectBackend(){
         return 'webgpu';
     }
 
-    const canvas =
+    const c =
     document.createElement('canvas');
 
-    if(canvas.getContext('webgl2')){
+    if(c.getContext('webgl2')){
 
         backendBadge.textContent =
         'WebGL';
@@ -419,7 +387,7 @@ async function detectBackend(){
 detectBackend();
 
 /* =========================================================
-   SCALE
+   SCALE BUTTONS
 ========================================================= */
 
 scaleBtns.forEach(btn=>{
@@ -429,64 +397,36 @@ scaleBtns.forEach(btn=>{
         scaleBtns.forEach(b=>{
 
             b.className =
-            'scaleBtn bg-zinc-900 text-zinc-400 py-3 rounded-xl';
+            'scaleBtn bg-zinc-900 text-zinc-400 rounded-2xl py-3';
 
         });
 
         btn.className =
-        'scaleBtn bg-cyan-500 text-black font-bold py-3 rounded-xl';
+        'scaleBtn bg-cyan-500 text-black font-bold rounded-2xl py-3';
 
-        scale = Number(btn.dataset.scale);
+        currentScale =
+        Number(btn.dataset.scale);
 
     });
 
 });
 
 /* =========================================================
-   LOAD
+   FILE LOAD
 ========================================================= */
 
-drop.addEventListener(
-'click',
-()=>fileInput.click()
-);
+dropZone.addEventListener('click',()=>{
 
-drop.addEventListener(
-'dragover',
-e=>e.preventDefault()
-);
-
-drop.addEventListener(
-'drop',
-async e=>{
-
-    e.preventDefault();
-
-    if(e.dataTransfer.files[0]){
-
-        await loadImage(
-            e.dataTransfer.files[0]
-        );
-
-    }
+    fileInput.click();
 
 });
 
-fileInput.addEventListener(
-'change',
-async e=>{
+fileInput.addEventListener('change',async e=>{
 
-    if(e.target.files[0]){
+    const file =
+    e.target.files[0];
 
-        await loadImage(
-            e.target.files[0]
-        );
-
-    }
-
-});
-
-async function loadImage(file){
+    if(!file) return;
 
     bitmap?.close?.();
 
@@ -496,49 +436,38 @@ async function loadImage(file){
     const url =
     URL.createObjectURL(file);
 
-    original.src = url;
+    originalImage.src = url;
 
-    upload.classList.add('hidden');
+    uploadUI.classList.add('hidden');
 
     viewer.classList.remove('hidden');
 
     statusText.textContent =
     'Imagem carregada';
-
-}
+});
 
 /* =========================================================
    START
 ========================================================= */
 
-startBtn.addEventListener(
-'click',
-async ()=>{
+startBtn.addEventListener('click',()=>{
 
     if(!bitmap || processing) return;
 
     processing = true;
 
-    startBtn.disabled = true;
-
     cancelBtn.classList.remove('hidden');
 
-    downloadBtn.classList.add('hidden');
+    startBtn.disabled = true;
 
-    const backend =
-    await detectBackend();
-
-    startWorker(backend);
-
+    processImage();
 });
 
 /* =========================================================
    CANCEL
 ========================================================= */
 
-cancelBtn.addEventListener(
-'click',
-()=>{
+cancelBtn.addEventListener('click',()=>{
 
     worker?.terminate();
 
@@ -547,152 +476,19 @@ cancelBtn.addEventListener(
 });
 
 /* =========================================================
-   WORKER
+   PROCESS
 ========================================================= */
 
-function startWorker(backend){
+async function processImage(){
 
-const code = `
+    const backend =
+    await detectBackend();
 
-self.onmessage = async e => {
-
-    try{
-
-        const data = e.data;
-
-        const bitmap =
-        data.bitmap;
-
-        const scale =
-        data.scale;
-
-        const memory =
-        data.memory;
-
-        const tileSize =
-        memory <= 2 ? 128 :
-        memory <= 4 ? 192 :
-        256;
-
-        const targetW =
-        bitmap.width * scale;
-
-        const targetH =
-        bitmap.height * scale;
-
-        const offscreen =
-        new OffscreenCanvas(
-            targetW,
-            targetH
-        );
-
-        const ctx =
-        offscreen.getContext('2d',{
-            alpha:false
-        });
-
-        ctx.imageSmoothingEnabled = true;
-
-        ctx.imageSmoothingQuality =
-        'high';
-
-        const total =
-        Math.ceil(bitmap.width/tileSize) *
-        Math.ceil(bitmap.height/tileSize);
-
-        let done = 0;
-
-        for(
-            let y=0;
-            y<bitmap.height;
-            y+=tileSize
-        ){
-
-            for(
-                let x=0;
-                x<bitmap.width;
-                x+=tileSize
-            ){
-
-                const w =
-                Math.min(
-                    tileSize,
-                    bitmap.width-x
-                );
-
-                const h =
-                Math.min(
-                    tileSize,
-                    bitmap.height-y
-                );
-
-                ctx.drawImage(
-
-                    bitmap,
-
-                    x,
-                    y,
-                    w,
-                    h,
-
-                    x*scale,
-                    y*scale,
-                    w*scale,
-                    h*scale
-                );
-
-                done++;
-
-                const progress =
-                5 + (
-                    done/total
-                ) * 85;
-
-                self.postMessage({
-
-                    type:'progress',
-
-                    progress,
-
-                    text:'Processando tiles'
-
-                });
-
-                await new Promise(r=>
-                    setTimeout(r,0)
-                );
-            }
-        }
-
-        const result =
-        offscreen.transferToImageBitmap();
-
-        self.postMessage({
-
-            type:'done',
-
-            bitmap:result
-
-        },[result]);
-
-    }catch(err){
-
-        self.postMessage({
-
-            type:'error',
-
-            error:err.message
-
-        });
-
-    }
-
-};
-
-`;
+    const workerCode =
+    createWorker();
 
     const blob =
-    new Blob([code],{
+    new Blob([workerCode],{
         type:'application/javascript'
     });
 
@@ -702,7 +498,7 @@ self.onmessage = async e => {
     );
 
     worker.onmessage =
-    async e=>{
+    async e => {
 
         const data = e.data;
 
@@ -710,13 +506,15 @@ self.onmessage = async e => {
 
             updateProgress(
                 data.progress,
-                data.text
+                data.status
             );
         }
 
         if(data.type === 'done'){
 
-            await render(data.bitmap);
+            await renderResult(
+                data.bitmap
+            );
 
             cleanup();
         }
@@ -725,17 +523,17 @@ self.onmessage = async e => {
 
             console.error(data.error);
 
-            await fallback();
-
             cleanup();
         }
     };
 
     worker.postMessage({
 
+        type:'start',
+
         bitmap,
 
-        scale,
+        scale:currentScale,
 
         backend,
 
@@ -743,67 +541,64 @@ self.onmessage = async e => {
         navigator.deviceMemory || 2
 
     },[bitmap]);
-
 }
 
 /* =========================================================
    RENDER
 ========================================================= */
 
-async function render(finalBitmap){
+async function renderResult(resultBitmap){
 
     updateProgress(
         92,
-        'Aplicando nitidez premium'
+        'Melhorando nitidez'
     );
 
     await nextFrame();
 
-    upscaled.width =
-    finalBitmap.width;
-
-    upscaled.height =
-    finalBitmap.height;
-
     const ctx =
-    upscaled.getContext('2d',{
+    upscaledCanvas.getContext('2d',{
         alpha:false
     });
 
+    upscaledCanvas.width =
+    resultBitmap.width;
+
+    upscaledCanvas.height =
+    resultBitmap.height;
+
     ctx.drawImage(
-        finalBitmap,
+        resultBitmap,
         0,
         0
     );
 
-    finalBitmap.close?.();
+    resultBitmap.close?.();
 
-    await nextFrame();
-
-    ultraSharpen(
+    await ultraSharpen(
         ctx,
-        upscaled.width,
-        upscaled.height
+        upscaledCanvas.width,
+        upscaledCanvas.height
     );
 
     await nextFrame();
 
-    clarityPass(
+    await clarityPass(
         ctx,
-        upscaled.width,
-        upscaled.height
+        upscaledCanvas.width,
+        upscaledCanvas.height
     );
 
     await nextFrame();
 
-    enhanceColors(ctx);
+    await enhanceColors(ctx);
 
     await nextFrame();
 
-    textureRecovery(
+    await textureRecovery(
         ctx,
-        upscaled.width,
-        upscaled.height
+        upscaledCanvas.width,
+        upscaledCanvas.height
     );
 
     updateProgress(
@@ -814,73 +609,13 @@ async function render(finalBitmap){
     enableCompare();
 
     downloadBtn.classList.remove('hidden');
-
 }
 
 /* =========================================================
-   FALLBACK
+   ULTRA SHARPEN
 ========================================================= */
 
-async function fallback(){
-
-    updateProgress(
-        20,
-        'Fallback híbrido'
-    );
-
-    const w =
-    bitmap.width * scale;
-
-    const h =
-    bitmap.height * scale;
-
-    upscaled.width = w;
-
-    upscaled.height = h;
-
-    const ctx =
-    upscaled.getContext('2d',{
-        alpha:false
-    });
-
-    ctx.imageSmoothingEnabled =
-    true;
-
-    ctx.imageSmoothingQuality =
-    'high';
-
-    ctx.drawImage(
-        bitmap,
-        0,
-        0,
-        w,
-        h
-    );
-
-    ultraSharpen(ctx,w,h);
-
-    clarityPass(ctx,w,h);
-
-    enhanceColors(ctx);
-
-    textureRecovery(ctx,w,h);
-
-    updateProgress(
-        100,
-        'Fallback concluído'
-    );
-
-    enableCompare();
-
-    downloadBtn.classList.remove('hidden');
-
-}
-
-/* =========================================================
-   PREMIUM SHARPEN
-========================================================= */
-
-function ultraSharpen(ctx,w,h){
+async function ultraSharpen(ctx,w,h){
 
     const temp =
     new OffscreenCanvas(w,h);
@@ -894,26 +629,24 @@ function ultraSharpen(ctx,w,h){
         0
     );
 
+    const intensity =
+    Number(
+        sharpnessRange.value
+    );
+
     ctx.filter =
     'blur(0.6px)';
 
-    ctx.drawImage(
-        temp,
-        0,
-        0
-    );
+    ctx.drawImage(temp,0,0);
 
     ctx.globalCompositeOperation =
     'overlay';
 
     ctx.filter =
-    'contrast(1.18) saturate(1.08)';
+    \`contrast(\${intensity})
+     saturate(1.08)\`;
 
-    ctx.drawImage(
-        temp,
-        0,
-        0
-    );
+    ctx.drawImage(temp,0,0);
 
     ctx.globalCompositeOperation =
     'source-over';
@@ -925,13 +658,13 @@ function ultraSharpen(ctx,w,h){
    CLARITY
 ========================================================= */
 
-function clarityPass(ctx,w,h){
+async function clarityPass(ctx,w,h){
 
     ctx.globalCompositeOperation =
     'soft-light';
 
     ctx.filter =
-    'contrast(1.15)';
+    'contrast(1.16)';
 
     ctx.drawImage(
         ctx.canvas,
@@ -948,16 +681,23 @@ function clarityPass(ctx,w,h){
 }
 
 /* =========================================================
-   COLOR
+   COLORS
 ========================================================= */
 
-function enhanceColors(ctx){
+async function enhanceColors(ctx){
+
+    const vibrance =
+    Number(
+        vibranceRange.value
+    );
 
     ctx.globalCompositeOperation =
     'source-over';
 
     ctx.filter =
-    'contrast(1.12) saturate(1.18) brightness(1.02)';
+    \`contrast(1.12)
+     saturate(\${vibrance})
+     brightness(1.03)\`;
 
     ctx.drawImage(
         ctx.canvas,
@@ -972,14 +712,14 @@ function enhanceColors(ctx){
    TEXTURE
 ========================================================= */
 
-function textureRecovery(ctx,w,h){
+async function textureRecovery(ctx,w,h){
 
-    const block = 64;
+    const step = 128;
 
-    for(let y=0;y<h;y+=block){
+    for(let y=0;y<h;y+=step){
 
         const hh =
-        Math.min(block,h-y);
+        Math.min(step,h-y);
 
         const img =
         ctx.getImageData(
@@ -994,34 +734,38 @@ function textureRecovery(ctx,w,h){
         for(let i=0;i<d.length;i+=4){
 
             const grain =
-            (Math.random()-0.5)*1.5;
+            (Math.random() - .5) * 1.4;
 
-            d[i]+=grain;
-            d[i+1]+=grain;
-            d[i+2]+=grain;
-
+            d[i] += grain;
+            d[i+1] += grain;
+            d[i+2] += grain;
         }
 
-        ctx.putImageData(img,0,y);
+        ctx.putImageData(
+            img,
+            0,
+            y
+        );
 
+        await yieldThread();
     }
-
 }
 
 /* =========================================================
    DOWNLOAD
 ========================================================= */
 
-downloadBtn.addEventListener(
-'click',
-()=>{
+downloadBtn.addEventListener('click',()=>{
 
     updateProgress(
         100,
         'Exportando'
     );
 
-    upscaled.toBlob(blob=>{
+    const type =
+    formatSelect.value;
+
+    upscaledCanvas.toBlob(blob=>{
 
         const url =
         URL.createObjectURL(blob);
@@ -1032,13 +776,11 @@ downloadBtn.addEventListener(
         a.href = url;
 
         a.download =
-        'NexusAI_Ultra.' +
-
-        (
-            formatSelect.value.includes('png')
+        \`NexusAI_\${currentScale}x.\${
+            type.includes('png')
             ? 'png'
             : 'jpg'
-        );
+        }\`;
 
         document.body.appendChild(a);
 
@@ -1052,13 +794,7 @@ downloadBtn.addEventListener(
 
         },1500);
 
-    },
-
-    formatSelect.value,
-
-    Number(
-        qualityRange.value
-    ));
+    },type,.95);
 
 });
 
@@ -1115,40 +851,41 @@ function moveSlider(e){
     let x =
     clientX - rect.left;
 
-    x = Math.max(
+    x =
+    Math.max(
         0,
         Math.min(x,rect.width)
     );
 
-    const p =
+    const percent =
     x / rect.width * 100;
 
     slider.style.left =
-    p + '%';
+    percent + '%';
 
-    original.style.clipPath =
+    originalImage.style.clipPath =
     \`polygon(
         0 0,
-        \${p}% 0,
-        \${p}% 100%,
+        \${percent}% 0,
+        \${percent}% 100%,
         0 100%
     )\`;
 
-    upscaled.style.clipPath =
+    upscaledCanvas.style.clipPath =
     \`polygon(
-        \${p}% 0,
+        \${percent}% 0,
         100% 0,
         100% 100%,
-        \${p}% 100%
+        \${percent}% 100%
     )\`;
 }
 
 function enableCompare(){
 
-    original.style.clipPath =
+    originalImage.style.clipPath =
     'polygon(0 0,50% 0,50% 100%,0 100%)';
 
-    upscaled.style.clipPath =
+    upscaledCanvas.style.clipPath =
     'polygon(50% 0,100% 0,100% 100%,50% 100%)';
 }
 
@@ -1156,7 +893,7 @@ function enableCompare(){
    PROGRESS
 ========================================================= */
 
-function updateProgress(v,text){
+function updateProgress(v,t){
 
     requestAnimationFrame(()=>{
 
@@ -1167,10 +904,8 @@ function updateProgress(v,text){
         Math.round(v) + '%';
 
         statusText.textContent =
-        text;
-
+        t;
     });
-
 }
 
 /* =========================================================
@@ -1188,7 +923,6 @@ function cleanup(){
     worker?.terminate();
 
     worker = null;
-
 }
 
 /* =========================================================
@@ -1200,6 +934,175 @@ function nextFrame(){
     return new Promise(r=>
         requestAnimationFrame(r)
     );
+}
+
+function yieldThread(){
+
+    return new Promise(r=>
+        setTimeout(r,0)
+    );
+}
+
+/* =========================================================
+   WORKER
+========================================================= */
+
+function createWorker(){
+
+return \`
+
+self.onmessage = async e => {
+
+    const data = e.data;
+
+    if(data.type !== 'start') return;
+
+    try{
+
+        const bitmap =
+        data.bitmap;
+
+        const scale =
+        data.scale;
+
+        const memory =
+        data.memory;
+
+        const tileSize =
+            memory <= 2 ? 128 :
+            memory <= 4 ? 192 :
+            256;
+
+        self.postMessage({
+            type:'progress',
+            progress:5,
+            status:'Preparando tiles'
+        });
+
+        const targetW =
+        bitmap.width * scale;
+
+        const targetH =
+        bitmap.height * scale;
+
+        const canvas =
+        new OffscreenCanvas(
+            targetW,
+            targetH
+        );
+
+        const ctx =
+        canvas.getContext('2d',{
+            alpha:false
+        });
+
+        ctx.imageSmoothingEnabled = true;
+
+        ctx.imageSmoothingQuality =
+        'high';
+
+        const totalTiles =
+        Math.ceil(bitmap.width / tileSize) *
+        Math.ceil(bitmap.height / tileSize);
+
+        let processed = 0;
+
+        for(
+            let y=0;
+            y<bitmap.height;
+            y+=tileSize
+        ){
+
+            for(
+                let x=0;
+                x<bitmap.width;
+                x+=tileSize
+            ){
+
+                const w =
+                Math.min(
+                    tileSize,
+                    bitmap.width - x
+                );
+
+                const h =
+                Math.min(
+                    tileSize,
+                    bitmap.height - y
+                );
+
+                ctx.drawImage(
+
+                    bitmap,
+
+                    x,
+                    y,
+                    w,
+                    h,
+
+                    x * scale,
+                    y * scale,
+                    w * scale,
+                    h * scale
+                );
+
+                processed++;
+
+                const progress =
+                5 + (
+                    processed /
+                    totalTiles
+                ) * 80;
+
+                self.postMessage({
+
+                    type:'progress',
+
+                    progress,
+
+                    status:
+                    'Upscaling IA'
+
+                });
+
+                await new Promise(r=>
+                    setTimeout(r,0)
+                );
+            }
+        }
+
+        self.postMessage({
+            type:'progress',
+            progress:90,
+            status:'Finalizando'
+        });
+
+        const result =
+        canvas.transferToImageBitmap();
+
+        bitmap.close?.();
+
+        self.postMessage({
+
+            type:'done',
+
+            bitmap:result
+
+        },[result]);
+
+    }catch(err){
+
+        self.postMessage({
+
+            type:'error',
+
+            error:err.message
+
+        });
+    }
+};
+
+\`;
 }
 
 </script>
