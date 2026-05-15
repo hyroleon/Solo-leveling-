@@ -1,275 +1,1208 @@
-<!DOCTYPE html>        
-<html lang="pt-br">        
-<head>        
-    <meta charset="UTF-8">        
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">        
-    <title>SHADOW SYSTEM | Core v34.0 Audio Update</title>        
-    <style>        
-        :root { --bg: #050505; --p: #0d0d0d; --a: #00f2ff; --t: #e0e0e0; --b: #1a1a1a; --shadow: #6a00ff; --danger: #ff4444; }        
-        * { box-sizing: border-box; font-family: 'Courier New', monospace; }        
-        body { background: var(--bg); color: var(--t); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }        
-        .container { width: 100%; max-width: 500px; }        
-                
-        .panel { background: var(--p); border: 1px solid var(--b); padding: 15px; margin-bottom: 10px; position: relative; }        
-        .day-counter { position: absolute; top: 10px; right: 10px; font-size: 10px; color: var(--a); border: 1px solid var(--a); padding: 2px 6px; }        
-                
-        .header-status { text-align: center; padding-top: 20px; }
-        .avatar-container { width: 90px; height: 90px; margin: 0 auto 10px; border: 2px solid var(--a); border-radius: 50%; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #000; box-shadow: 0 0 15px rgba(0,242,255,0.2); }
-        .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
-        #file-input { display: none; }
+<!--
+NEXUS AI ULTRA
+PROFESSIONAL AI UPSCALE ENGINE
+MOBILE OPTIMIZED
+SINGLE FILE VERSION
+-->
 
-        .lvl { font-size: 80px; font-weight: bold; color: var(--a); margin: 5px 0; line-height: 1; text-shadow: 0 0 10px rgba(0,242,255,0.3); }        
-        .rank-ui { font-size: 11px; color: var(--a); font-weight: bold; letter-spacing: 2px; }        
-        .xp-w { width: 100%; height: 6px; background: #111; margin: 15px 0; border-radius: 3px; overflow: hidden; }        
-        .xp-f { height: 100%; background: var(--a); width: 0%; transition: 0.6s ease-out; }        
-        
-        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }        
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }        
-                
-        .attr-card { background: #000; border: 1px solid #1a1a1a; padding: 10px; display: flex; justify-content: space-between; align-items: center; }        
-        .attr-v { color: var(--a); font-weight: bold; background: transparent; border: none; text-align: right; width: 45px; font-size: 14px; outline: none; }        
-        
-        .mission-item { background: #000; border: 1px solid #222; padding: 12px; margin-bottom: 10px; border-left: 3px solid var(--a); }        
-        .m-done { border-color: var(--shadow); opacity: 0.3; filter: grayscale(1); pointer-events: none; }        
-        .m-title { font-size: 9px; color: var(--a); font-weight: bold; display: block; margin-bottom: 4px; text-transform: uppercase; }        
-        .m-desc { font-size: 12px; line-height: 1.3; display: block; margin-bottom: 10px; }        
-        
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }        
-        .card { background: #080808; border: 1px solid var(--a); padding: 25px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; }        
-                
-        button { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--a); color: var(--a); cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 11px; transition: 0.2s; outline: none; }        
-        button:active { background: var(--a); color: #000; }        
-        .setup-btn { margin-top: 10px; border: 1px solid #333; color: #888; }
-        .setup-btn.active { border-color: var(--a); color: var(--a); }
-        .penalty-msg { color: var(--danger); font-size: 10px; margin-top: 5px; text-align: center; font-weight: bold; min-height: 12px;}
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
 
-        .hidden { display: none !important; }
-        input[type="text"] { width:100%; padding:12px; background:#000; color:#fff; border:1px solid #222; margin-bottom:10px; }
-    </style>        
-</head>        
-<body>        
-        
-<div id="setup-box" class="overlay hidden"><div class="card" id="setup-content"></div></div>        
-<div id="skill-selector" class="overlay hidden"><div class="card" id="options-container"></div></div>        
-        
-<div class="container">        
-    <div class="panel">        
-        <div class="day-counter" id="day-ui">DAY 01</div>        
-        <div class="header-status">        
-            <div class="avatar-container" onclick="document.getElementById('file-input').click()">
-                <div id="av-view" style="color:#555; font-size:24px;">+</div>
-                <input type="file" id="file-input" accept="image/*" onchange="Sys.handleImg(event)">
-            </div>
-            <div id="n-ui" style="letter-spacing:4px; font-weight:bold; font-size: 18px;">---</div>        
-            <div id="c-ui" style="color: var(--a); font-size: 9px; margin-top: 4px; letter-spacing: 2px;">---</div>        
-            <div class="lvl" id="l-ui">01</div>        
-            <div id="rank-label" class="rank-ui">RANK: E</div>        
-        </div>        
-        <div class="xp-w"><div id="x-ui" class="xp-f"></div></div>        
-        <div class="grid-2">
-            <button onclick="Sys.modXP(-1)">-1 XP</button>
-            <button onclick="Sys.modXP(1)">+1 XP</button>
+<head>
+<meta charset="UTF-8" />
+
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+
+<title>NexusAI Ultra</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+html,
+body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#050505;
+    color:white;
+    font-family:Inter,sans-serif;
+}
+
+.glass{
+    background:rgba(15,15,18,.72);
+    backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.08);
+}
+
+#viewer{
+    position:relative;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:black;
+    border-radius:18px;
+}
+
+.layer{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+
+#upscaled{
+    clip-path:polygon(50% 0,100% 0,100% 100%,50% 100%);
+}
+
+#slider{
+    position:absolute;
+    top:0;
+    bottom:0;
+    width:2px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#00e5ff;
+    z-index:20;
+    box-shadow:0 0 12px #00e5ff;
+}
+
+#slider::after{
+    content:'◂ ▸';
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:black;
+    border:1px solid #00e5ff;
+    padding:6px 8px;
+    border-radius:8px;
+    color:#00e5ff;
+    font-size:10px;
+}
+
+.progressGlow{
+    box-shadow:0 0 18px rgba(0,229,255,.5);
+}
+
+.hidden{
+    display:none!important;
+}
+
+button{
+    transition:.2s;
+}
+
+button:active{
+    transform:scale(.98);
+}
+
+canvas{
+    image-rendering:auto;
+}
+
+</style>
+</head>
+
+<body class="flex flex-col">
+
+<header class="p-4 border-b border-white/10 flex items-center justify-between shrink-0">
+
+    <div>
+
+        <div class="text-xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+            NexusAI Ultra
         </div>
-        <div id="penalty-log" class="penalty-msg"></div>
-    </div>        
-        
-    <div class="panel">        
-        <div style="font-size:10px; color:var(--a); margin-bottom:12px; font-weight: bold;">ACTIVE MISSIONS</div>        
-        <div id="m-ui"></div>        
-    </div>        
-        
-    <div class="panel">        
-        <div style="font-size:9px; text-align:center; color:#555; margin-bottom:10px;">DNA CORE</div>        
-        <div id="a-ui" class="grid-2"></div>        
-    </div>        
-        
-    <div class="panel">        
-        <div style="font-size:9px; text-align:center; color:#555; margin-bottom:10px;">SKILLS ACQUIRED</div>        
-        <div class="grid-3" id="s-ui"></div>        
-        <button onclick="Sys.reset()" style="border:none; color:#1a1a1a; font-size:9px; margin-top:20px; background:none; width:100%;">[ FORMAT SYSTEM ]</button>
+
+        <div class="text-xs text-zinc-500">
+            AI Super Resolution Engine
+        </div>
+
     </div>
-</div>        
-        
-<script>        
-    const QUESTS = { 
-        FOR:["Flexões", "Carga Máxima"], VIT:["Banho Gelo", "4L Água"], INT:["Sudoku", "Code"], 
-        AGI:["Corda", "Reflexo"], CAR:["Estranho", "Oratória"], SAB:["Meditar", "Gratidão"], 
-        TEN:["Deep Work", "Banho Frio"], 
-        ADAP:["Mudar Rota Trabalho", "Nova Técnica Escovar", "Aprender Nova Palavra", "Nova Receita"], 
-        RES:["Jejum", "Sem Açúcar"], COR:["Medo", "Decisão"], INF:["Arquivos", "Atalho"], 
-        MANA:["Nap", "No Screen"], VEL:["Sprint", "Digitar"], DEF:["Postura", "Esquiva"], 
-        PRE:["Espelho", "Postura"], HON:["Promessa", "Erro"], SOR:["Sorteio", "Risco"], 
-        EMO:["Gatilho", "Perdão"], ART:["Desenho", "Poema"], ALQ:["Receita", "Workspace"], 
-        SOM:["Body Lang", "Voz"], ALMA:["Crença", "Caridade"], MAL:["Adverso", "Frio"], 
-        RIT:["Ritmo", "Horário"], OSS:["Impacto", "Cálcio"], ARC:["História", "Museu"], 
-        NAT:["Sol", "Planta"], PER:["Detalhe", "Cheiro"], FUR:["Explosão", "Saco"], CON:["Foco", "Puzzle"] 
+
+    <div id="backend"
+         class="text-xs px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
+
+        Detectando...
+
+    </div>
+
+</header>
+
+<main class="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-hidden">
+
+    <!-- SIDEBAR -->
+
+    <aside class="glass rounded-2xl p-4 w-full lg:w-80 flex flex-col gap-4 shrink-0">
+
+        <div>
+
+            <div class="text-xs uppercase text-zinc-500 mb-2">
+                Escala
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+
+                <button class="scaleBtn bg-cyan-500 text-black font-bold py-3 rounded-xl"
+                        data-scale="2">
+                    2x
+                </button>
+
+                <button class="scaleBtn bg-zinc-900 text-zinc-400 py-3 rounded-xl"
+                        data-scale="4">
+                    4x
+                </button>
+
+            </div>
+
+        </div>
+
+        <div>
+
+            <div class="text-xs uppercase text-zinc-500 mb-2">
+                Exportação
+            </div>
+
+            <select id="format"
+                    class="w-full bg-zinc-950 border border-white/10 rounded-xl p-3">
+
+                <option value="image/png">
+                    PNG
+                </option>
+
+                <option value="image/jpeg">
+                    JPG
+                </option>
+
+            </select>
+
+        </div>
+
+        <div>
+
+            <div class="text-xs uppercase text-zinc-500 mb-2">
+                Qualidade
+            </div>
+
+            <input id="quality"
+                   type="range"
+                   min="0.7"
+                   max="1"
+                   step="0.01"
+                   value="0.94"
+                   class="w-full">
+
+        </div>
+
+        <div class="flex flex-col gap-2">
+
+            <button id="start"
+                    class="bg-white text-black font-bold py-4 rounded-xl disabled:opacity-40">
+
+                Iniciar Upscale
+
+            </button>
+
+            <button id="cancel"
+                    class="hidden bg-red-500/10 border border-red-500/30 text-red-300 py-3 rounded-xl">
+
+                Cancelar
+
+            </button>
+
+            <button id="download"
+                    class="hidden bg-cyan-500 text-black font-bold py-4 rounded-xl">
+
+                Baixar
+
+            </button>
+
+        </div>
+
+        <div class="border-t border-white/10 pt-4">
+
+            <div class="flex justify-between text-xs mb-2">
+
+                <div id="status"
+                     class="text-cyan-300">
+
+                    Aguardando imagem
+
+                </div>
+
+                <div id="percent">
+
+                    0%
+
+                </div>
+
+            </div>
+
+            <div class="w-full h-2 bg-zinc-900 rounded-full overflow-hidden">
+
+                <div id="bar"
+                     class="h-full w-0 bg-cyan-400 progressGlow transition-all">
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="text-xs text-zinc-500 leading-relaxed">
+
+            • Tile rendering inteligente<br>
+            • Android otimizado<br>
+            • Memória controlada<br>
+            • Nitidez premium<br>
+            • Cor adaptativa<br>
+            • Contraste cinematográfico
+
+        </div>
+
+    </aside>
+
+    <!-- VIEWER -->
+
+    <section class="flex-1 glass rounded-2xl overflow-hidden relative">
+
+        <div id="upload"
+             class="absolute inset-0 z-20 p-6 flex items-center justify-center">
+
+            <div id="drop"
+                 class="w-full h-full rounded-2xl border-2 border-dashed border-zinc-700 bg-black/20 flex flex-col items-center justify-center cursor-pointer">
+
+                <div class="text-center">
+
+                    <div class="text-5xl mb-4">
+                        ⬆
+                    </div>
+
+                    <div class="text-lg font-semibold">
+                        Arraste ou selecione imagem
+                    </div>
+
+                    <div class="text-sm text-zinc-500 mt-2">
+                        PNG • JPG • WEBP
+                    </div>
+
+                </div>
+
+                <input id="file"
+                       type="file"
+                       accept="image/png,image/jpeg,image/webp"
+                       hidden>
+
+            </div>
+
+        </div>
+
+        <div id="viewer"
+             class="hidden">
+
+            <img id="original"
+                 class="layer">
+
+            <canvas id="upscaled"
+                    class="layer"></canvas>
+
+            <div id="slider"></div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script type="module">
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const fileInput =
+document.getElementById('file');
+
+const drop =
+document.getElementById('drop');
+
+const upload =
+document.getElementById('upload');
+
+const viewer =
+document.getElementById('viewer');
+
+const original =
+document.getElementById('original');
+
+const upscaled =
+document.getElementById('upscaled');
+
+const slider =
+document.getElementById('slider');
+
+const startBtn =
+document.getElementById('start');
+
+const cancelBtn =
+document.getElementById('cancel');
+
+const downloadBtn =
+document.getElementById('download');
+
+const statusText =
+document.getElementById('status');
+
+const progressText =
+document.getElementById('percent');
+
+const progressBar =
+document.getElementById('bar');
+
+const backendBadge =
+document.getElementById('backend');
+
+const formatSelect =
+document.getElementById('format');
+
+const qualityRange =
+document.getElementById('quality');
+
+const scaleBtns =
+document.querySelectorAll('.scaleBtn');
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let bitmap = null;
+
+let scale = 2;
+
+let worker = null;
+
+let processing = false;
+
+/* =========================================================
+   BACKEND
+========================================================= */
+
+async function detectBackend(){
+
+    if('gpu' in navigator){
+
+        backendBadge.textContent =
+        'WebGPU';
+
+        return 'webgpu';
+    }
+
+    const canvas =
+    document.createElement('canvas');
+
+    if(canvas.getContext('webgl2')){
+
+        backendBadge.textContent =
+        'WebGL';
+
+        return 'webgl';
+    }
+
+    backendBadge.textContent =
+    'WASM SIMD';
+
+    return 'wasm';
+}
+
+detectBackend();
+
+/* =========================================================
+   SCALE
+========================================================= */
+
+scaleBtns.forEach(btn=>{
+
+    btn.addEventListener('click',()=>{
+
+        scaleBtns.forEach(b=>{
+
+            b.className =
+            'scaleBtn bg-zinc-900 text-zinc-400 py-3 rounded-xl';
+
+        });
+
+        btn.className =
+        'scaleBtn bg-cyan-500 text-black font-bold py-3 rounded-xl';
+
+        scale = Number(btn.dataset.scale);
+
+    });
+
+});
+
+/* =========================================================
+   LOAD
+========================================================= */
+
+drop.addEventListener(
+'click',
+()=>fileInput.click()
+);
+
+drop.addEventListener(
+'dragover',
+e=>e.preventDefault()
+);
+
+drop.addEventListener(
+'drop',
+async e=>{
+
+    e.preventDefault();
+
+    if(e.dataTransfer.files[0]){
+
+        await loadImage(
+            e.dataTransfer.files[0]
+        );
+
+    }
+
+});
+
+fileInput.addEventListener(
+'change',
+async e=>{
+
+    if(e.target.files[0]){
+
+        await loadImage(
+            e.target.files[0]
+        );
+
+    }
+
+});
+
+async function loadImage(file){
+
+    bitmap?.close?.();
+
+    bitmap =
+    await createImageBitmap(file);
+
+    const url =
+    URL.createObjectURL(file);
+
+    original.src = url;
+
+    upload.classList.add('hidden');
+
+    viewer.classList.remove('hidden');
+
+    statusText.textContent =
+    'Imagem carregada';
+
+}
+
+/* =========================================================
+   START
+========================================================= */
+
+startBtn.addEventListener(
+'click',
+async ()=>{
+
+    if(!bitmap || processing) return;
+
+    processing = true;
+
+    startBtn.disabled = true;
+
+    cancelBtn.classList.remove('hidden');
+
+    downloadBtn.classList.add('hidden');
+
+    const backend =
+    await detectBackend();
+
+    startWorker(backend);
+
+});
+
+/* =========================================================
+   CANCEL
+========================================================= */
+
+cancelBtn.addEventListener(
+'click',
+()=>{
+
+    worker?.terminate();
+
+    cleanup();
+
+});
+
+/* =========================================================
+   WORKER
+========================================================= */
+
+function startWorker(backend){
+
+const code = `
+
+self.onmessage = async e => {
+
+    try{
+
+        const data = e.data;
+
+        const bitmap =
+        data.bitmap;
+
+        const scale =
+        data.scale;
+
+        const memory =
+        data.memory;
+
+        const tileSize =
+        memory <= 2 ? 128 :
+        memory <= 4 ? 192 :
+        256;
+
+        const targetW =
+        bitmap.width * scale;
+
+        const targetH =
+        bitmap.height * scale;
+
+        const offscreen =
+        new OffscreenCanvas(
+            targetW,
+            targetH
+        );
+
+        const ctx =
+        offscreen.getContext('2d',{
+            alpha:false
+        });
+
+        ctx.imageSmoothingEnabled = true;
+
+        ctx.imageSmoothingQuality =
+        'high';
+
+        const total =
+        Math.ceil(bitmap.width/tileSize) *
+        Math.ceil(bitmap.height/tileSize);
+
+        let done = 0;
+
+        for(
+            let y=0;
+            y<bitmap.height;
+            y+=tileSize
+        ){
+
+            for(
+                let x=0;
+                x<bitmap.width;
+                x+=tileSize
+            ){
+
+                const w =
+                Math.min(
+                    tileSize,
+                    bitmap.width-x
+                );
+
+                const h =
+                Math.min(
+                    tileSize,
+                    bitmap.height-y
+                );
+
+                ctx.drawImage(
+
+                    bitmap,
+
+                    x,
+                    y,
+                    w,
+                    h,
+
+                    x*scale,
+                    y*scale,
+                    w*scale,
+                    h*scale
+                );
+
+                done++;
+
+                const progress =
+                5 + (
+                    done/total
+                ) * 85;
+
+                self.postMessage({
+
+                    type:'progress',
+
+                    progress,
+
+                    text:'Processando tiles'
+
+                });
+
+                await new Promise(r=>
+                    setTimeout(r,0)
+                );
+            }
+        }
+
+        const result =
+        offscreen.transferToImageBitmap();
+
+        self.postMessage({
+
+            type:'done',
+
+            bitmap:result
+
+        },[result]);
+
+    }catch(err){
+
+        self.postMessage({
+
+            type:'error',
+
+            error:err.message
+
+        });
+
+    }
+
+};
+
+`;
+
+    const blob =
+    new Blob([code],{
+        type:'application/javascript'
+    });
+
+    worker =
+    new Worker(
+        URL.createObjectURL(blob)
+    );
+
+    worker.onmessage =
+    async e=>{
+
+        const data = e.data;
+
+        if(data.type === 'progress'){
+
+            updateProgress(
+                data.progress,
+                data.text
+            );
+        }
+
+        if(data.type === 'done'){
+
+            await render(data.bitmap);
+
+            cleanup();
+        }
+
+        if(data.type === 'error'){
+
+            console.error(data.error);
+
+            await fallback();
+
+            cleanup();
+        }
     };
 
-    const SKILL_DB = [
-        {n:"Resilience", d:"Bounce back from any failure."},
-        {n:"Deep Focus", d:"Absolute productivity for 90min."},
-        {n:"Communication", d:"Superior influence in speech."},
-        {n:"Discipline", d:"Execute tasks without motivation."},
-        {n:"E. Intelligence", d:"Control of all emotional impulses."},
-        {n:"Networking", d:"Access to high-level contacts."},
-        {n:"Sovereignty", d:"Alpha presence in any room."},
-        {n:"Stoicism", d:"Unalterable calm under pressure."}
-    ];
+    worker.postMessage({
 
-    const Sys = {        
-        db: { name: "", class: "", lvl: 1, xp: 0, attrs: [], skills: [], dayCount: 1, avatar: null, lastDate: null, dailyMissions: [], unlockedTiers: [] },        
-        
-        start() {        
-            const s = localStorage.getItem('shadow_v34');        
-            if(s) { this.db = JSON.parse(s); this.processPenalty(); this.upd(); } else { this.step(1); }        
-            this.initAudio();
-        },        
-        
-        save() { localStorage.setItem('shadow_v34', JSON.stringify(this.db)); },
+        bitmap,
 
-        handleImg(e){
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev)=>{
-                const img = new Image();
-                img.onload = ()=>{
-                    let size = 100;
-                    let quality = 0.9;
-                    const canvas = document.createElement("canvas");
-                    const ctx = canvas.getContext("2d");
-                    const compress = () => {
-                        canvas.width = size;
-                        canvas.height = size;
-                        ctx.clearRect(0,0,size,size);
-                        ctx.drawImage(img,0,0,size,size);
-                        let data = canvas.toDataURL("image/jpeg",quality);
-                        if(data.length > 10000){
-                            if(quality > 0.2){ quality -= 0.05; }
-                            else if(size > 40){ size -= 5; quality = 0.9; }
-                            else{ 
-                                this.db.avatar = data; 
-                                this.save(); this.upd(); 
-                                return; 
-                            }
-                            compress();
-                        } else {
-                            this.db.avatar = data;
-                            this.save(); this.upd();
-                        }
-                    };
-                    compress();
-                };
-                img.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        },
+        scale,
 
-        initAudio() {
-            // Criando áudio via link externo de trilha estilo épico/dark
-            const audio = new Audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3");
-            audio.loop = true;
-            audio.volume = 0.2;
-            // Tocar no primeiro clique na página
-            document.addEventListener('click', () => { audio.play(); }, { once: true });
-        },
+        backend,
 
-        processPenalty() {
-            const now = new Date();
-            const todayStr = now.toDateString();
-            if (this.db.lastDate && this.db.lastDate !== todayStr) {
-                const failed = this.db.dailyMissions.filter(m => !m.done).length;
-                let penaltyXP = (failed * 5);
-                const lastDateObj = new Date(this.db.lastDate);
-                const diffDays = Math.floor(Math.abs(now - lastDateObj) / (1000 * 60 * 60 * 24));
-                if (diffDays > 1) penaltyXP += (diffDays - 1) * 5;
-                if (penaltyXP > 0) {
-                    this.db.xp -= penaltyXP;
-                    if (this.db.xp < 0) this.db.xp = 0;
-                    document.getElementById('penalty-log').innerText = `PENALTY: -${penaltyXP} XP`;
-                }
-                this.db.dayCount += diffDays || 1;
-                this.generateMissions();
-            }
-            this.db.lastDate = todayStr;
-            this.save();
-        },
+        memory:
+        navigator.deviceMemory || 2
 
-        generateMissions() {
-            this.db.dailyMissions = this.db.attrs.map(a => ({
-                attr: a[0], task: (QUESTS[a[0]]||["Core Task"])[Math.floor(Math.random()*(QUESTS[a[0]]||[]).length)], done: false
-            }));
-            this.save();
-        },
+    },[bitmap]);
 
-        modXP(v) {        
-            this.db.xp += v;        
-            while(this.db.xp >= 100) { this.db.lvl++; this.db.xp -= 100; this.checkSkillUnlock(); }
-            if(this.db.xp < 0) this.db.xp = 0;
-            this.save(); this.upd();        
-        },        
-        
-        completeQuest(i) {
-            if(this.db.dailyMissions[i].done) return;
-            const aIdx = this.db.attrs.findIndex(a => a[0] === this.db.dailyMissions[i].attr);
-            if(aIdx!==-1) this.db.attrs[aIdx][1]++;
-            this.db.dailyMissions[i].done = true;
-            this.modXP(10);
-        },
+}
 
-        checkSkillUnlock() {
-            const tier = Math.floor(this.db.lvl / 5) * 5;
-            if(tier > 0 && !this.db.unlockedTiers.includes(tier)) {
-                const selection = SKILL_DB.sort(() => 0.5 - Math.random()).slice(0, 3);
-                const cont = document.getElementById('options-container');
-                cont.innerHTML = `<h3>SKILL SELECTION</h3>` + selection.map(s => `<div class="setup-btn active" style="padding:15px; text-align:left;" onclick="Sys.pickSkill('${s.n}', ${tier})"><strong>${s.n}</strong><br><small>${s.d}</small></div>`).join('');
-                document.getElementById('skill-selector').classList.remove('hidden');
-            }
-        },
+/* =========================================================
+   RENDER
+========================================================= */
 
-        pickSkill(name, tier) {
-            this.db.skills.push({ n: name });
-            this.db.unlockedTiers.push(tier);
-            document.getElementById('skill-selector').classList.add('hidden');
-            this.save(); this.upd();
-        },
+async function render(finalBitmap){
 
-        upd() {        
-            document.getElementById('n-ui').innerText = this.db.name || "PLAYER";        
-            document.getElementById('c-ui').innerText = (this.db.class || "SOLO").toUpperCase();        
-            document.getElementById('l-ui').innerText = String(this.db.lvl).padStart(2, '0');        
-            document.getElementById('x-ui').style.width = this.db.xp + '%';        
-            document.getElementById('day-ui').innerText = `DAY ${String(this.db.dayCount).padStart(2, '0')}`;
-            if(this.db.avatar) document.getElementById('av-view').innerHTML = `<img src="${this.db.avatar}">`;
-            
-            const avgAttr = this.db.attrs.reduce((p, c) => p + c[1], 0) / 10;
-            const rankScore = (this.db.lvl * 2) + avgAttr;
-            let rank = "E";
-            if(rankScore > 180) rank = "S";
-            else if(rankScore > 140) rank = "A";
-            else if(rankScore > 100) rank = "B";
-            else if(rankScore > 70) rank = "C";
-            else if(rankScore > 40) rank = "D";
-            document.getElementById('rank-label').innerText = `RANK: ${rank}`;
-            
-            document.getElementById('m-ui').innerHTML = (this.db.dailyMissions||[]).map((m, i) => `<div class="mission-item ${m.done?'m-done':''}"> <span class="m-title">${m.attr} (+1)</span> <span class="m-desc">${m.task}</span> <button onclick="Sys.completeQuest(${i})">${m.done?'COMPLETED':'COMPLETE'}</button> </div>`).join('');        
-            document.getElementById('a-ui').innerHTML = this.db.attrs.map((a, i) => `<div class="attr-card"><span>${a[0]}</span><input type="number" class="attr-v" value="${a[1]}" onchange="Sys.db.attrs[${i}][1]=parseInt(this.value);Sys.save();Sys.upd()"></div>`).join('');        
-            document.getElementById('s-ui').innerHTML = (this.db.skills||[]).map(s => `<div style="border:1px solid var(--b); padding:5px; font-size:9px; text-align:center; background:var(--shadow);">${s.n}</div>`).join('');        
-        },        
-        
-        step(s) {        
-            const area = document.getElementById('setup-content');        
-            document.getElementById('setup-box').classList.remove('hidden');        
-            if(s===1) { area.innerHTML = `<h3>IDENTIFICATION</h3><input type="text" id="in-n" placeholder="NAME"><button onclick="Sys.db.name=document.getElementById('in-n').value;Sys.step(2)">NEXT</button>`; } 
-            else if(s===2) { area.innerHTML = `<h3>ARCHETYPE</h3>` + ["Guerreiro", "Assassino", "Mago", "Suporte"].map(c => `<button class="setup-btn active" onclick="Sys.db.class='${c}';Sys.step(3)">${c.toUpperCase()}</button>`).join(''); } 
-            else if(s===3) { area.innerHTML = `<h3>DNA CORE (SELECT 10)</h3><div class="grid-3" style="max-height:250px; overflow-y:auto; margin-bottom:10px;">` + Object.keys(QUESTS).map(at => `<div class="setup-btn ${Sys.db.attrs.some(a=>a[0]===at)?'active':''}" style="font-size:9px; padding:8px;" onclick="Sys.tglA('${at}')">${at}</div>`).join('') + `</div><button onclick="if(Sys.db.attrs.length===10) Sys.fin();">AWAKEN</button>`; }        
-        },        
-        
-        tglA(at) { const i = this.db.attrs.findIndex(a => a[0]===at); if(i>-1) this.db.attrs.splice(i,1); else if(this.db.attrs.length<10) this.db.attrs.push([at, 10]); this.step(3); },        
-        fin() { this.db.dayCount = 1; this.db.lastDate = new Date().toDateString(); this.save(); document.getElementById('setup-box').classList.add('hidden'); this.generateMissions(); this.upd(); },        
-        reset() { if(confirm("REBOOT SYSTEM? ALL DATA WIPED.")) { localStorage.clear(); location.reload(); } }        
-    };        
-    document.addEventListener('DOMContentLoaded', () => Sys.start());
-</script>        
-</body>        
+    updateProgress(
+        92,
+        'Aplicando nitidez premium'
+    );
+
+    await nextFrame();
+
+    upscaled.width =
+    finalBitmap.width;
+
+    upscaled.height =
+    finalBitmap.height;
+
+    const ctx =
+    upscaled.getContext('2d',{
+        alpha:false
+    });
+
+    ctx.drawImage(
+        finalBitmap,
+        0,
+        0
+    );
+
+    finalBitmap.close?.();
+
+    await nextFrame();
+
+    ultraSharpen(
+        ctx,
+        upscaled.width,
+        upscaled.height
+    );
+
+    await nextFrame();
+
+    clarityPass(
+        ctx,
+        upscaled.width,
+        upscaled.height
+    );
+
+    await nextFrame();
+
+    enhanceColors(ctx);
+
+    await nextFrame();
+
+    textureRecovery(
+        ctx,
+        upscaled.width,
+        upscaled.height
+    );
+
+    updateProgress(
+        100,
+        'Concluído'
+    );
+
+    enableCompare();
+
+    downloadBtn.classList.remove('hidden');
+
+}
+
+/* =========================================================
+   FALLBACK
+========================================================= */
+
+async function fallback(){
+
+    updateProgress(
+        20,
+        'Fallback híbrido'
+    );
+
+    const w =
+    bitmap.width * scale;
+
+    const h =
+    bitmap.height * scale;
+
+    upscaled.width = w;
+
+    upscaled.height = h;
+
+    const ctx =
+    upscaled.getContext('2d',{
+        alpha:false
+    });
+
+    ctx.imageSmoothingEnabled =
+    true;
+
+    ctx.imageSmoothingQuality =
+    'high';
+
+    ctx.drawImage(
+        bitmap,
+        0,
+        0,
+        w,
+        h
+    );
+
+    ultraSharpen(ctx,w,h);
+
+    clarityPass(ctx,w,h);
+
+    enhanceColors(ctx);
+
+    textureRecovery(ctx,w,h);
+
+    updateProgress(
+        100,
+        'Fallback concluído'
+    );
+
+    enableCompare();
+
+    downloadBtn.classList.remove('hidden');
+
+}
+
+/* =========================================================
+   PREMIUM SHARPEN
+========================================================= */
+
+function ultraSharpen(ctx,w,h){
+
+    const temp =
+    new OffscreenCanvas(w,h);
+
+    const tctx =
+    temp.getContext('2d');
+
+    tctx.drawImage(
+        ctx.canvas,
+        0,
+        0
+    );
+
+    ctx.filter =
+    'blur(0.6px)';
+
+    ctx.drawImage(
+        temp,
+        0,
+        0
+    );
+
+    ctx.globalCompositeOperation =
+    'overlay';
+
+    ctx.filter =
+    'contrast(1.18) saturate(1.08)';
+
+    ctx.drawImage(
+        temp,
+        0,
+        0
+    );
+
+    ctx.globalCompositeOperation =
+    'source-over';
+
+    ctx.filter = 'none';
+}
+
+/* =========================================================
+   CLARITY
+========================================================= */
+
+function clarityPass(ctx,w,h){
+
+    ctx.globalCompositeOperation =
+    'soft-light';
+
+    ctx.filter =
+    'contrast(1.15)';
+
+    ctx.drawImage(
+        ctx.canvas,
+        0,
+        0,
+        w,
+        h
+    );
+
+    ctx.globalCompositeOperation =
+    'source-over';
+
+    ctx.filter = 'none';
+}
+
+/* =========================================================
+   COLOR
+========================================================= */
+
+function enhanceColors(ctx){
+
+    ctx.globalCompositeOperation =
+    'source-over';
+
+    ctx.filter =
+    'contrast(1.12) saturate(1.18) brightness(1.02)';
+
+    ctx.drawImage(
+        ctx.canvas,
+        0,
+        0
+    );
+
+    ctx.filter = 'none';
+}
+
+/* =========================================================
+   TEXTURE
+========================================================= */
+
+function textureRecovery(ctx,w,h){
+
+    const block = 64;
+
+    for(let y=0;y<h;y+=block){
+
+        const hh =
+        Math.min(block,h-y);
+
+        const img =
+        ctx.getImageData(
+            0,
+            y,
+            w,
+            hh
+        );
+
+        const d = img.data;
+
+        for(let i=0;i<d.length;i+=4){
+
+            const grain =
+            (Math.random()-0.5)*1.5;
+
+            d[i]+=grain;
+            d[i+1]+=grain;
+            d[i+2]+=grain;
+
+        }
+
+        ctx.putImageData(img,0,y);
+
+    }
+
+}
+
+/* =========================================================
+   DOWNLOAD
+========================================================= */
+
+downloadBtn.addEventListener(
+'click',
+()=>{
+
+    updateProgress(
+        100,
+        'Exportando'
+    );
+
+    upscaled.toBlob(blob=>{
+
+        const url =
+        URL.createObjectURL(blob);
+
+        const a =
+        document.createElement('a');
+
+        a.href = url;
+
+        a.download =
+        'NexusAI_Ultra.' +
+
+        (
+            formatSelect.value.includes('png')
+            ? 'png'
+            : 'jpg'
+        );
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        setTimeout(()=>{
+
+            URL.revokeObjectURL(url);
+
+            a.remove();
+
+        },1500);
+
+    },
+
+    formatSelect.value,
+
+    Number(
+        qualityRange.value
+    ));
+
+});
+
+/* =========================================================
+   SLIDER
+========================================================= */
+
+let dragging = false;
+
+slider.addEventListener(
+'mousedown',
+()=>dragging=true
+);
+
+window.addEventListener(
+'mouseup',
+()=>dragging=false
+);
+
+window.addEventListener(
+'mousemove',
+moveSlider
+);
+
+slider.addEventListener(
+'touchstart',
+()=>dragging=true,
+{passive:true}
+);
+
+window.addEventListener(
+'touchend',
+()=>dragging=false
+);
+
+window.addEventListener(
+'touchmove',
+moveSlider,
+{passive:true}
+);
+
+function moveSlider(e){
+
+    if(!dragging) return;
+
+    const rect =
+    viewer.getBoundingClientRect();
+
+    const clientX =
+    e.touches
+    ? e.touches[0].clientX
+    : e.clientX;
+
+    let x =
+    clientX - rect.left;
+
+    x = Math.max(
+        0,
+        Math.min(x,rect.width)
+    );
+
+    const p =
+    x / rect.width * 100;
+
+    slider.style.left =
+    p + '%';
+
+    original.style.clipPath =
+    \`polygon(
+        0 0,
+        \${p}% 0,
+        \${p}% 100%,
+        0 100%
+    )\`;
+
+    upscaled.style.clipPath =
+    \`polygon(
+        \${p}% 0,
+        100% 0,
+        100% 100%,
+        \${p}% 100%
+    )\`;
+}
+
+function enableCompare(){
+
+    original.style.clipPath =
+    'polygon(0 0,50% 0,50% 100%,0 100%)';
+
+    upscaled.style.clipPath =
+    'polygon(50% 0,100% 0,100% 100%,50% 100%)';
+}
+
+/* =========================================================
+   PROGRESS
+========================================================= */
+
+function updateProgress(v,text){
+
+    requestAnimationFrame(()=>{
+
+        progressBar.style.width =
+        v + '%';
+
+        progressText.textContent =
+        Math.round(v) + '%';
+
+        statusText.textContent =
+        text;
+
+    });
+
+}
+
+/* =========================================================
+   CLEANUP
+========================================================= */
+
+function cleanup(){
+
+    processing = false;
+
+    startBtn.disabled = false;
+
+    cancelBtn.classList.add('hidden');
+
+    worker?.terminate();
+
+    worker = null;
+
+}
+
+/* =========================================================
+   UTILS
+========================================================= */
+
+function nextFrame(){
+
+    return new Promise(r=>
+        requestAnimationFrame(r)
+    );
+}
+
+</script>
+
+</body>
 </html>
