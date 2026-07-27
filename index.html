@@ -1,94 +1,195 @@
-<style>
-body{
-    font-family:Arial,sans-serif;
-    background:#f3f4f6;
-    margin:15px;
-}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotina Semanal</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 15px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            background: #fff;
+            font-size: 12px;
+        }
+        thead th {
+            position: sticky;
+            top: 0;
+            background: #2563eb;
+            color: #fff;
+            z-index: 2;
+        }
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 3px;
+            height: 28px;
+        }
+        th:first-child,
+        td:first-child {
+            width: 55px;
+            text-align: center;
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        td {
+            vertical-align: top;
+        }
+        td[contenteditable] {
+            cursor: text;
+        }
+        td:focus {
+            outline: none;
+            background: #dbeafe;
+        }
+        .btn-group {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .btn-group button {
+            padding: 6px 18px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            background: #2563eb;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-group button:hover {
+            background: #1d4ed8;
+        }
+        .btn-group button.danger {
+            background: #dc2626;
+        }
+        .btn-group button.danger:hover {
+            background: #b91c1c;
+        }
+    </style>
+</head>
+<body>
 
-h2{
-    text-align:center;
-    margin-bottom:10px;
-}
+    <h2>📅 Rotina Semanal</h2>
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    table-layout:fixed;
-    background:#fff;
-    font-size:12px;
-}
+    <table id="tabelaRotina">
+        <thead>
+            <tr>
+                <th>Hora</th>
+                <th>Seg</th>
+                <th>Ter</th>
+                <th>Qua</th>
+                <th>Qui</th>
+                <th>Sex</th>
+                <th>Sáb</th>
+                <th>Dom</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Linhas geradas dinamicamente -->
+        </tbody>
+    </table>
 
-thead th{
-    position:sticky;
-    top:0;
-    background:#2563eb;
-    color:#fff;
-    z-index:2;
-}
+    <div class="btn-group">
+        <button onclick="salvarDados()">💾 Salvar agora</button>
+        <button class="danger" onclick="limparTudo()">🗑️ Limpar tudo</button>
+    </div>
 
-th,td{
-    border:1px solid #d1d5db;
-    padding:3px;
-    height:28px;
-}
+    <script>
+        // --------------------------------------------
+        // 1. GERAR TABELA (horários 06h às 22h)
+        // --------------------------------------------
+        const tbody = document.querySelector('#tabelaRotina tbody');
+        const horas = ['06h','07h','08h','09h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h'];
 
-th:first-child,
-td:first-child{
-    width:55px;
-    text-align:center;
-    background:#f5f5f5;
-    font-weight:bold;
-}
+        horas.forEach(h => {
+            const tr = document.createElement('tr');
+            const tdHora = document.createElement('td');
+            tdHora.textContent = h;
+            tr.appendChild(tdHora);
 
-td{
-    vertical-align:top;
-}
+            for (let i = 0; i < 7; i++) {
+                const td = document.createElement('td');
+                td.contentEditable = true;
+                td.dataset.hora = h;
+                td.dataset.dia = i; // 0=Seg ... 6=Dom
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        });
 
-td[contenteditable]{
-    cursor:text;
-}
+        // --------------------------------------------
+        // 2. SALVAR E CARREGAR DO localStorage
+        // --------------------------------------------
+        const STORAGE_KEY = 'rotinaSemanal';
 
-td:focus{
-    outline:none;
-    background:#dbeafe;
-}
-</style>
+        function carregarDados() {
+            const dados = localStorage.getItem(STORAGE_KEY);
+            if (!dados) return;
 
-<h2>📅 Rotina Semanal</h2>
+            const obj = JSON.parse(dados);
+            const celulas = document.querySelectorAll('#tabelaRotina tbody td[contenteditable]');
+            celulas.forEach(td => {
+                const chave = td.dataset.hora + '_' + td.dataset.dia;
+                if (obj[chave] !== undefined) {
+                    td.textContent = obj[chave];
+                }
+            });
+        }
 
-<table>
-<thead>
-<tr>
-<th>Hora</th>
-<th>Seg</th>
-<th>Ter</th>
-<th>Qua</th>
-<th>Qui</th>
-<th>Sex</th>
-<th>Sáb</th>
-<th>Dom</th>
-</tr>
-</thead>
+        function salvarDados() {
+            const obj = {};
+            const celulas = document.querySelectorAll('#tabelaRotina tbody td[contenteditable]');
+            celulas.forEach(td => {
+                const chave = td.dataset.hora + '_' + td.dataset.dia;
+                obj[chave] = td.textContent.trim();
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+            // Feedback visual (opcional)
+            const btn = document.querySelector('.btn-group button:first-child');
+            const original = btn.textContent;
+            btn.textContent = '✅ Salvo!';
+            setTimeout(() => btn.textContent = original, 1500);
+        }
 
-<tbody>
+        function limparTudo() {
+            if (!confirm('Tem certeza que deseja apagar toda a rotina?')) return;
+            const celulas = document.querySelectorAll('#tabelaRotina tbody td[contenteditable]');
+            celulas.forEach(td => td.textContent = '');
+            salvarDados(); // salva vazio
+        }
 
-<tr><td>06h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>07h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>08h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>09h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>10h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>11h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>12h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>13h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>14h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>15h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>16h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>17h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>18h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>19h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>20h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>21h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
-<tr><td>22h</td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td><td contenteditable></td></tr>
+        // --------------------------------------------
+        // 3. EVENTOS PARA SALVAR AUTOMATICAMENTE
+        // --------------------------------------------
+        // Salva ao perder o foco (blur) ou ao soltar uma tecla (input)
+        document.addEventListener('blur', (e) => {
+            if (e.target.matches('#tabelaRotina tbody td[contenteditable]')) {
+                salvarDados();
+            }
+        }, true);
 
-</tbody>
-</table>
+        document.addEventListener('input', (e) => {
+            if (e.target.matches('#tabelaRotina tbody td[contenteditable]')) {
+                salvarDados();
+            }
+        });
+
+        // --------------------------------------------
+        // 4. INICIALIZAR
+        // --------------------------------------------
+        carregarDados();
+    </script>
+
+</body>
+</html>
