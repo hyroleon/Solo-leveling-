@@ -3,23 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Dashboard — Rotina Previsível e Independente</title>
+    <title>Meu Dashboard — Rotina Previsível e Reordenável</title>
     <style>
         :root {
             --bg: #070b14;
             --bg-card: #0d1525;
-            --bg-card-hover: #111c30;
             --border: #1a2740;
             --border-glow: #1e3050;
             --accent: #00c6e0;
-            --accent-soft: #009bb5;
             --accent-purple: #7b6cf6;
             --text: #dce3ed;
             --text-secondary: #8899b4;
             --text-muted: #5a6d84;
-            --success: #2dd4bf;
-            --danger: #f87171;
-            --warning: #fbbf24;
             --progress-bg: #141f30;
             --progress-fill: linear-gradient(90deg, #00c6e0, #7b6cf6);
             --shadow-glow: 0 0 30px rgba(0, 198, 224, 0.08);
@@ -85,7 +80,7 @@
         .block-title { font-size: 1rem; font-weight: 600; }
         .block-time-range { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
         .task-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-        .task-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); border:1px solid transparent; position: relative; }
+        .task-item { display: flex; align-items: center; gap: 6px; padding: 8px 8px; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); border:1px solid transparent; }
         .task-item:hover { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04); }
         .custom-checkbox { width:22px; height:22px; border-radius:6px; border:2px solid var(--border-glow); display:flex; align-items:center; justify-content:center; transition:var(--transition); flex-shrink:0; }
         .task-item.checked .custom-checkbox { background:var(--accent); border-color:var(--accent); box-shadow:0 0 12px rgba(0,198,224,0.35); }
@@ -94,9 +89,10 @@
         .task-label { font-size:0.9rem; color:var(--text); flex:1; }
         .task-item.checked .task-label { color:var(--text-muted); text-decoration:line-through; }
         .task-time-badge { font-size:0.7rem; color:var(--text-muted); font-family:var(--font-mono); background:rgba(255,255,255,0.03); padding:3px 8px; border-radius:12px; white-space:nowrap; }
-        .task-actions { display: flex; gap: 4px; margin-left: 4px; }
-        .task-action-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 0.8rem; transition: var(--transition); display: flex; align-items: center; justify-content: center; }
-        .task-action-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+        .task-actions { display: flex; gap: 2px; margin-left: 2px; }
+        .task-action-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 3px 5px; border-radius: 4px; font-size: 0.8rem; transition: var(--transition); display: flex; align-items: center; justify-content: center; min-width: 24px; }
+        .task-action-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+        .task-action-btn:disabled { opacity: 0.3; pointer-events: none; }
         .add-task-btn { background: none; border: 1px dashed var(--border-glow); color: var(--text-muted); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: var(--transition); margin-top: 8px; width: 100%; text-align: center; }
         .add-task-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,198,224,0.05); }
 
@@ -123,6 +119,8 @@
         @media (max-width:480px) {
             .app-container { padding:10px 10px 100px; }
             .task-label { font-size:0.82rem; }
+            .task-actions { gap: 0; }
+            .task-action-btn { padding: 2px 3px; font-size: 0.7rem; min-width: 20px; }
         }
     </style>
 </head>
@@ -180,7 +178,7 @@
     <script>
         (function() {
             // ───────────────────────────────
-            // DEFAULT DATA (para inicialização)
+            // DEFAULT DATA
             // ───────────────────────────────
             const DEFAULT_DAILY = {
                 morning: [
@@ -202,13 +200,12 @@
             // ───────────────────────────────
             // STATE
             // ───────────────────────────────
-            const STORAGE_KEY = 'meu_dashboard_v3';
-            // weeklyTasks: { 0..6: { tasks: { morning, afternoon, night } } }
+            const STORAGE_KEY = 'meu_dashboard_v4';
             let weeklyTasks = {};
-            let checkedTasks = {}; // { "2026-08-07": ["id1",...] }
+            let checkedTasks = {};
             let currentTab = 'daily';
             let selectedWeekday = new Date().getDay();
-            let editingTask = null; // { block, taskId, dayIndex, context ('daily' ou 'weekly') }
+            let editingTask = null;
 
             // DOM refs
             const $headerDate = document.getElementById('headerDate');
@@ -246,12 +243,10 @@
                         checkedTasks = data.checkedTasks || {};
                     }
                 } catch (e) {}
-                // Garantir que todos os dias 0-6 existam com a estrutura padrão
                 for (let i = 0; i < 7; i++) {
                     if (!weeklyTasks[i]) {
                         weeklyTasks[i] = { tasks: JSON.parse(JSON.stringify(DEFAULT_DAILY)) };
                     } else {
-                        // garantir que cada bloco exista
                         for (const block of ['morning', 'afternoon', 'night']) {
                             if (!weeklyTasks[i].tasks[block]) weeklyTasks[i].tasks[block] = [];
                         }
@@ -261,9 +256,7 @@
                 if (!checkedTasks[today]) checkedTasks[today] = [];
             }
             function saveAllData() {
-                try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ weeklyTasks, checkedTasks }));
-                } catch(e) {}
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ weeklyTasks, checkedTasks })); } catch(e) {}
             }
             function getTodayKey() {
                 const d = new Date();
@@ -276,9 +269,7 @@
             function getTasksForDay(dayIndex) {
                 return weeklyTasks[dayIndex]?.tasks || { morning: [], afternoon: [], night: [] };
             }
-            function getTodayTasks() {
-                return getTasksForDay(new Date().getDay());
-            }
+            function getTodayTasks() { return getTasksForDay(new Date().getDay()); }
             function isTaskChecked(taskId) {
                 const today = getTodayKey();
                 return (checkedTasks[today] || []).includes(taskId);
@@ -292,8 +283,6 @@
                 saveAllData();
                 updateAllUI();
             }
-
-            // IDs de todas as tarefas do dia atual (para progresso e "Agora?")
             function getAllTodayTaskIds() {
                 const tasks = getTodayTasks();
                 const ids = [];
@@ -327,7 +316,37 @@
             }
 
             // ───────────────────────────────
-            // RENDER DAILY (sempre o dia atual)
+            // MOVE TASK
+            // ───────────────────────────────
+            function moveTask(block, taskId, direction, dayIndex, context) {
+                // direction: -1 (up) or 1 (down)
+                const targetDays = [];
+                if (context === 'daily') {
+                    const applyAll = confirm('Deseja aplicar essa mudança de ordem a TODOS os dias da semana?\n(OK = todos, Cancelar = apenas hoje)');
+                    if (applyAll) {
+                        for (let d = 0; d < 7; d++) targetDays.push(d);
+                    } else {
+                        targetDays.push(new Date().getDay());
+                    }
+                } else {
+                    targetDays.push(dayIndex);
+                }
+
+                for (const d of targetDays) {
+                    const tasks = weeklyTasks[d].tasks[block];
+                    const idx = tasks.findIndex(t => t.id === taskId);
+                    if (idx === -1) continue;
+                    const newIdx = idx + direction;
+                    if (newIdx < 0 || newIdx >= tasks.length) continue;
+                    // Swap
+                    [tasks[idx], tasks[newIdx]] = [tasks[newIdx], tasks[idx]];
+                }
+                saveAllData();
+                updateAllUI();
+            }
+
+            // ───────────────────────────────
+            // RENDER DAILY
             // ───────────────────────────────
             function renderDailyTasks() {
                 const today = new Date().getDay();
@@ -340,28 +359,35 @@
                 for (const { listEl, block } of blocks) {
                     if (!listEl) continue;
                     listEl.innerHTML = '';
-                    for (const task of tasks[block]) {
+                    const blockTasks = tasks[block];
+                    blockTasks.forEach((task, index) => {
                         const checked = isTaskChecked(task.id);
                         const li = document.createElement('li');
                         li.className = 'task-item' + (checked ? ' checked' : '');
+                        const isFirst = index === 0;
+                        const isLast = index === blockTasks.length - 1;
                         li.innerHTML = `
                             <div class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                             <span class="task-label">${task.label}</span>
                             <span class="task-time-badge">${task.time || ''}</span>
                             <div class="task-actions">
+                                <button class="task-action-btn move-up" data-id="${task.id}" data-block="${block}" ${isFirst ? 'disabled' : ''}>↑</button>
+                                <button class="task-action-btn move-down" data-id="${task.id}" data-block="${block}" ${isLast ? 'disabled' : ''}>↓</button>
                                 <button class="task-action-btn edit-daily-task" data-id="${task.id}" data-block="${block}">✎</button>
                                 <button class="task-action-btn delete-daily-task" data-id="${task.id}" data-block="${block}">✕</button>
                             </div>`;
                         li.querySelector('.custom-checkbox').addEventListener('click', (e) => { e.stopPropagation(); toggleTask(task.id); });
+                        li.querySelector('.move-up').addEventListener('click', (e) => { e.stopPropagation(); moveTask(block, task.id, -1, today, 'daily'); });
+                        li.querySelector('.move-down').addEventListener('click', (e) => { e.stopPropagation(); moveTask(block, task.id, 1, today, 'daily'); });
                         li.querySelector('.edit-daily-task').addEventListener('click', (e) => { e.stopPropagation(); openTaskModal(block, task, today, 'daily'); });
                         li.querySelector('.delete-daily-task').addEventListener('click', (e) => { e.stopPropagation(); deleteTask(block, task.id, today, 'daily'); });
                         listEl.appendChild(li);
-                    }
+                    });
                 }
             }
 
             // ───────────────────────────────
-            // RENDER WEEKLY (dia selecionado)
+            // RENDER WEEKLY
             // ───────────────────────────────
             function renderWeekdaySelector() {
                 const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
@@ -389,34 +415,42 @@
                     const listEl = document.getElementById('weeklyTaskList-'+block);
                     if (!listEl) continue;
                     listEl.innerHTML = '';
-                    for (const task of tasks[block]) {
+                    const blockTasks = tasks[block];
+                    blockTasks.forEach((task, index) => {
+                        const isFirst = index === 0;
+                        const isLast = index === blockTasks.length - 1;
                         const li = document.createElement('li');
                         li.className = 'task-item';
                         li.innerHTML = `<span class="task-label">${task.label}</span><span class="task-time-badge">${task.time||''}</span>
-                            <div class="task-actions"><button class="task-action-btn edit-weekly-task" data-id="${task.id}" data-block="${block}">✎</button><button class="task-action-btn delete-weekly-task" data-id="${task.id}" data-block="${block}">✕</button></div>`;
+                            <div class="task-actions">
+                                <button class="task-action-btn move-up-weekly" data-id="${task.id}" data-block="${block}" ${isFirst ? 'disabled' : ''}>↑</button>
+                                <button class="task-action-btn move-down-weekly" data-id="${task.id}" data-block="${block}" ${isLast ? 'disabled' : ''}>↓</button>
+                                <button class="task-action-btn edit-weekly-task" data-id="${task.id}" data-block="${block}">✎</button>
+                                <button class="task-action-btn delete-weekly-task" data-id="${task.id}" data-block="${block}">✕</button>
+                            </div>`;
+                        li.querySelector('.move-up-weekly').addEventListener('click', (e)=> { e.stopPropagation(); moveTask(block, task.id, -1, selectedWeekday, 'weekly'); });
+                        li.querySelector('.move-down-weekly').addEventListener('click', (e)=> { e.stopPropagation(); moveTask(block, task.id, 1, selectedWeekday, 'weekly'); });
                         li.querySelector('.edit-weekly-task').addEventListener('click', (e)=> { e.stopPropagation(); openTaskModal(block, task, selectedWeekday, 'weekly'); });
                         li.querySelector('.delete-weekly-task').addEventListener('click', (e)=> { e.stopPropagation(); deleteTask(block, task.id, selectedWeekday, 'weekly'); });
                         listEl.appendChild(li);
-                    }
+                    });
                 }
-                // Botões de adicionar na semanal
                 document.querySelectorAll('#weeklyContent .add-task-btn').forEach(btn => {
                     btn.addEventListener('click', () => openTaskModal(btn.dataset.block, null, selectedWeekday, 'weekly'));
                 });
             }
 
             // ───────────────────────────────
-            // UNIFIED TASK MODAL & CRUD
+            // TASK MODAL & CRUD
             // ───────────────────────────────
             function openTaskModal(block, existingTask = null, dayIndex = null, context = 'daily') {
                 editingTask = { block, taskId: existingTask?.id || null, dayIndex, context };
                 $taskModalTitle.textContent = existingTask ? 'Editar tarefa' : 'Nova tarefa';
                 $taskNameInput.value = existingTask?.label || '';
                 $taskTimeInput.value = existingTask?.time || '';
-                // Mostrar checkbox "aplicar a todos" apenas no contexto diário
                 if (context === 'daily') {
                     $applyAllCheckboxContainer.style.display = 'flex';
-                    $applyAllCheckbox.checked = true; // padrão: adicionar a todos
+                    $applyAllCheckbox.checked = true;
                 } else {
                     $applyAllCheckboxContainer.style.display = 'none';
                     $applyAllCheckbox.checked = false;
@@ -430,25 +464,20 @@
                 if (!label) return alert('Por favor, insira um nome para a tarefa.');
                 const time = $taskTimeInput.value.trim();
                 if (!editingTask) return;
-
                 const { block, taskId, dayIndex, context } = editingTask;
                 const applyAll = (context === 'daily') ? $applyAllCheckbox.checked : false;
 
                 if (context === 'daily' && applyAll) {
-                    // Aplicar a operação em TODOS os dias da semana
                     for (let d = 0; d < 7; d++) {
                         const tasks = weeklyTasks[d].tasks[block];
                         if (taskId) {
-                            // Editar: procura a tarefa com mesmo ID em cada dia e atualiza
                             const idx = tasks.findIndex(t => t.id === taskId);
                             if (idx >= 0) { tasks[idx].label = label; tasks[idx].time = time; }
                         } else {
-                            // Adicionar: gera um novo ID para cada dia (para manter independência futura)
                             tasks.push({ id: generateId(), label, time });
                         }
                     }
                 } else {
-                    // Apenas no dia específico (diário sem "todos" ou semanal)
                     const targetDay = (context === 'daily') ? new Date().getDay() : dayIndex;
                     const tasks = weeklyTasks[targetDay].tasks[block];
                     if (taskId) {
@@ -458,7 +487,6 @@
                         tasks.push({ id: generateId(), label, time });
                     }
                 }
-
                 closeTaskModal();
                 saveAllData();
                 updateAllUI();
@@ -467,7 +495,6 @@
             function deleteTask(block, taskId, dayIndex, context) {
                 if (!confirm('Remover esta tarefa?')) return;
                 if (context === 'daily') {
-                    // Se for diário, perguntar se quer remover de todos os dias ou só hoje
                     const removeAll = confirm('Deseja remover esta tarefa de TODOS os dias da semana?\n(OK = todos, Cancelar = apenas hoje)');
                     if (removeAll) {
                         for (let d = 0; d < 7; d++) {
@@ -478,10 +505,8 @@
                         weeklyTasks[today].tasks[block] = weeklyTasks[today].tasks[block].filter(t => t.id !== taskId);
                     }
                 } else {
-                    // Semanal: remove apenas do dia selecionado
                     weeklyTasks[dayIndex].tasks[block] = weeklyTasks[dayIndex].tasks[block].filter(t => t.id !== taskId);
                 }
-                // Remover dos checked de hoje se necessário
                 const todayKey = getTodayKey();
                 if (checkedTasks[todayKey]) {
                     checkedTasks[todayKey] = checkedTasks[todayKey].filter(id => id !== taskId);
@@ -490,10 +515,7 @@
                 updateAllUI();
             }
 
-            function closeTaskModal() { 
-                $taskModal.classList.add('hidden'); 
-                editingTask = null; 
-            }
+            function closeTaskModal() { $taskModal.classList.add('hidden'); editingTask = null; }
 
             // ───────────────────────────────
             // WHAT NOW
@@ -564,7 +586,7 @@
             }
             function updateDateTime() {
                 const now = new Date();
-                const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+                const days = ['Domingo','Segunda','Terça','Quarta','Qui','Sex','Sábado'];
                 const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
                 $headerDate.textContent = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
                 $headerTime.textContent = now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
@@ -599,7 +621,6 @@
             $taskModal.addEventListener('click', (e)=>{ if (e.target===$taskModal) closeTaskModal(); });
             document.addEventListener('keydown', (e)=>{ if (e.key==='Escape') { closeTaskModal(); if(!$recoveryModal.classList.contains('hidden')) $recoveryModal.classList.add('hidden'); } });
 
-            // Botões de adicionar da Diária
             document.querySelectorAll('#panelDaily .add-task-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const block = btn.dataset.block;
@@ -608,7 +629,7 @@
                 });
             });
 
-            // Inicialização
+            // Init
             loadAllData();
             updateDateTime();
             switchTab('daily');
