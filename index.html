@@ -316,10 +316,21 @@
             }
 
             // ───────────────────────────────
+            // HELPER: find task index by id or fallback (label + time)
+            // ───────────────────────────────
+            function findTaskIndex(tasks, taskObj) {
+                if (!taskObj) return -1;
+                let idx = tasks.findIndex(t => t.id === taskObj.id);
+                if (idx !== -1) return idx;
+                // fallback for tasks with different IDs (created before fix)
+                idx = tasks.findIndex(t => t.label === taskObj.label && t.time === taskObj.time);
+                return idx;
+            }
+
+            // ───────────────────────────────
             // MOVE TASK
             // ───────────────────────────────
-            function moveTask(block, taskId, direction, dayIndex, context) {
-                // direction: -1 (up) or 1 (down)
+            function moveTask(block, taskObj, direction, dayIndex, context) {
                 const targetDays = [];
                 if (context === 'daily') {
                     const applyAll = confirm('Deseja aplicar essa mudança de ordem a TODOS os dias da semana?\n(OK = todos, Cancelar = apenas hoje)');
@@ -334,11 +345,10 @@
 
                 for (const d of targetDays) {
                     const tasks = weeklyTasks[d].tasks[block];
-                    const idx = tasks.findIndex(t => t.id === taskId);
+                    const idx = findTaskIndex(tasks, taskObj);
                     if (idx === -1) continue;
                     const newIdx = idx + direction;
                     if (newIdx < 0 || newIdx >= tasks.length) continue;
-                    // Swap
                     [tasks[idx], tasks[newIdx]] = [tasks[newIdx], tasks[idx]];
                 }
                 saveAllData();
@@ -377,10 +387,10 @@
                                 <button class="task-action-btn delete-daily-task" data-id="${task.id}" data-block="${block}">✕</button>
                             </div>`;
                         li.querySelector('.custom-checkbox').addEventListener('click', (e) => { e.stopPropagation(); toggleTask(task.id); });
-                        li.querySelector('.move-up').addEventListener('click', (e) => { e.stopPropagation(); moveTask(block, task.id, -1, today, 'daily'); });
-                        li.querySelector('.move-down').addEventListener('click', (e) => { e.stopPropagation(); moveTask(block, task.id, 1, today, 'daily'); });
+                        li.querySelector('.move-up').addEventListener('click', (e) => { e.stopPropagation(); moveTask(block, task, -1, today, 'daily'); });
+                        li.querySelector('.move-down').addEventListener('click', (e) => { e.stopPropagation(); moveTask(block, task, 1, today, 'daily'); });
                         li.querySelector('.edit-daily-task').addEventListener('click', (e) => { e.stopPropagation(); openTaskModal(block, task, today, 'daily'); });
-                        li.querySelector('.delete-daily-task').addEventListener('click', (e) => { e.stopPropagation(); deleteTask(block, task.id, today, 'daily'); });
+                        li.querySelector('.delete-daily-task').addEventListener('click', (e) => { e.stopPropagation(); deleteTask(block, task, today, 'daily'); });
                         listEl.appendChild(li);
                     });
                 }
@@ -428,10 +438,10 @@
                                 <button class="task-action-btn edit-weekly-task" data-id="${task.id}" data-block="${block}">✎</button>
                                 <button class="task-action-btn delete-weekly-task" data-id="${task.id}" data-block="${block}">✕</button>
                             </div>`;
-                        li.querySelector('.move-up-weekly').addEventListener('click', (e)=> { e.stopPropagation(); moveTask(block, task.id, -1, selectedWeekday, 'weekly'); });
-                        li.querySelector('.move-down-weekly').addEventListener('click', (e)=> { e.stopPropagation(); moveTask(block, task.id, 1, selectedWeekday, 'weekly'); });
+                        li.querySelector('.move-up-weekly').addEventListener('click', (e)=> { e.stopPropagation(); moveTask(block, task, -1, selectedWeekday, 'weekly'); });
+                        li.querySelector('.move-down-weekly').addEventListener('click', (e)=> { e.stopPropagation(); moveTask(block, task, 1, selectedWeekday, 'weekly'); });
                         li.querySelector('.edit-weekly-task').addEventListener('click', (e)=> { e.stopPropagation(); openTaskModal(block, task, selectedWeekday, 'weekly'); });
-                        li.querySelector('.delete-weekly-task').addEventListener('click', (e)=> { e.stopPropagation(); deleteTask(block, task.id, selectedWeekday, 'weekly'); });
+                        li.querySelector('.delete-weekly-task').addEventListener('click', (e)=> { e.stopPropagation(); deleteTask(block, task, selectedWeekday, 'weekly'); });
                         listEl.appendChild(li);
                     });
                 }
@@ -444,7 +454,7 @@
             // TASK MODAL & CRUD
             // ───────────────────────────────
             function openTaskModal(block, existingTask = null, dayIndex = null, context = 'daily') {
-                editingTask = { block, taskId: existingTask?.id || null, dayIndex, context };
+                editingTask = { block, task: existingTask, dayIndex, context };
                 $taskModalTitle.textContent = existingTask ? 'Editar tarefa' : 'Nova tarefa';
                 $taskNameInput.value = existingTask?.label || '';
                 $taskTimeInput.value = existingTask?.time || '';
@@ -464,25 +474,33 @@
                 if (!label) return alert('Por favor, insira um nome para a tarefa.');
                 const time = $taskTimeInput.value.trim();
                 if (!editingTask) return;
-                const { block, taskId, dayIndex, context } = editingTask;
+                const { block, task: existingTask, dayIndex, context } = editingTask;
                 const applyAll = (context === 'daily') ? $applyAllCheckbox.checked : false;
 
                 if (context === 'daily' && applyAll) {
+                    // Criar ou editar em todos os dias usando o mesmo ID para novas tarefas
+                    let globalId = existingTask?.id || generateId();
                     for (let d = 0; d < 7; d++) {
                         const tasks = weeklyTasks[d].tasks[block];
-                        if (taskId) {
-                            const idx = tasks.findIndex(t => t.id === taskId);
-                            if (idx >= 0) { tasks[idx].label = label; tasks[idx].time = time; }
+                        if (existingTask) {
+                            const idx = findTaskIndex(tasks, existingTask);
+                            if (idx >= 0) {
+                                tasks[idx].label = label;
+                                tasks[idx].time = time;
+                            }
                         } else {
-                            tasks.push({ id: generateId(), label, time });
+                            tasks.push({ id: globalId, label, time });
                         }
                     }
                 } else {
                     const targetDay = (context === 'daily') ? new Date().getDay() : dayIndex;
                     const tasks = weeklyTasks[targetDay].tasks[block];
-                    if (taskId) {
-                        const idx = tasks.findIndex(t => t.id === taskId);
-                        if (idx >= 0) { tasks[idx].label = label; tasks[idx].time = time; }
+                    if (existingTask) {
+                        const idx = findTaskIndex(tasks, existingTask);
+                        if (idx >= 0) {
+                            tasks[idx].label = label;
+                            tasks[idx].time = time;
+                        }
                     } else {
                         tasks.push({ id: generateId(), label, time });
                     }
@@ -492,24 +510,30 @@
                 updateAllUI();
             }
 
-            function deleteTask(block, taskId, dayIndex, context) {
+            function deleteTask(block, taskObj, dayIndex, context) {
                 if (!confirm('Remover esta tarefa?')) return;
                 if (context === 'daily') {
                     const removeAll = confirm('Deseja remover esta tarefa de TODOS os dias da semana?\n(OK = todos, Cancelar = apenas hoje)');
                     if (removeAll) {
                         for (let d = 0; d < 7; d++) {
-                            weeklyTasks[d].tasks[block] = weeklyTasks[d].tasks[block].filter(t => t.id !== taskId);
+                            const tasks = weeklyTasks[d].tasks[block];
+                            const idx = findTaskIndex(tasks, taskObj);
+                            if (idx !== -1) tasks.splice(idx, 1);
                         }
                     } else {
                         const today = new Date().getDay();
-                        weeklyTasks[today].tasks[block] = weeklyTasks[today].tasks[block].filter(t => t.id !== taskId);
+                        const tasks = weeklyTasks[today].tasks[block];
+                        const idx = findTaskIndex(tasks, taskObj);
+                        if (idx !== -1) tasks.splice(idx, 1);
                     }
                 } else {
-                    weeklyTasks[dayIndex].tasks[block] = weeklyTasks[dayIndex].tasks[block].filter(t => t.id !== taskId);
+                    const tasks = weeklyTasks[dayIndex].tasks[block];
+                    const idx = findTaskIndex(tasks, taskObj);
+                    if (idx !== -1) tasks.splice(idx, 1);
                 }
                 const todayKey = getTodayKey();
                 if (checkedTasks[todayKey]) {
-                    checkedTasks[todayKey] = checkedTasks[todayKey].filter(id => id !== taskId);
+                    checkedTasks[todayKey] = checkedTasks[todayKey].filter(id => id !== taskObj.id);
                 }
                 saveAllData();
                 updateAllUI();
